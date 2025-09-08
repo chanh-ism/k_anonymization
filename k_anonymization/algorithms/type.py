@@ -20,9 +20,10 @@ class Algorithm(ABC):
     def org_data(self):
         return self.dataset.df
 
-    def __reset_anon_data(self, anonymize_func):
+    def __reset(self, anonymize_func):
         def wrapper(*args, **kwargs):
             self.anon_data = self.org_data[:]
+            self.suppressed_qids = None
             return anonymize_func(self, *args, **kwargs)
 
         return wrapper
@@ -30,7 +31,7 @@ class Algorithm(ABC):
     def __getattribute__(self, name):
         if name == "anonymize":
             func = getattr(type(self), "anonymize")
-            return self.__reset_anon_data(func)
+            return self.__reset(func)
         return object.__getattribute__(self, name)
 
     @abstractmethod

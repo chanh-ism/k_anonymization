@@ -27,7 +27,7 @@ class Datafly(Algorithm):
         return qids[argmax(cardinalities)]
 
     def anonymize(self):
-        qids = [self.org_data.columns[x] for x in self.dataset.props["qi_index"]]
+        qids = self.dataset.qids
         hierarchies_tracking = {}
 
         while True:
@@ -44,9 +44,12 @@ class Datafly(Algorithm):
                     sum([x["count"] for x in not_k_anonymized_qids])
                     <= self.suppression_threshold
                 ):
+                    self.suppressed_qids = not_k_anonymized_qids
                     for qid in not_k_anonymized_qids:
                         queries = []
                         for i, att in enumerate(qid["qid"]):
+                            if att == "*":
+                                continue
                             if type(att) is str:
                                 queries.append(f'`{qids[i]}` != "{att}"')
                             else:

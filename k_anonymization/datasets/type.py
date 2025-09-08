@@ -1,6 +1,5 @@
 # +
 import json
-from functools import cached_property
 from os import path as os_path
 
 from pandas import read_csv
@@ -28,24 +27,31 @@ class Dataset:
         self.name = name
         self.__df = None
         self.__hierarchies = None
+        self.__props = None
         Dataset.all_datasets.append(self)
 
     def __str__(self):
         return self.name
 
-    @cached_property
+    @property
     def path(self):
         return f"{os_path.dirname(__file__)}/{self.name}"
 
-    @cached_property
+    @property
     def hierarchies_dir(self):
         return f"{self.path}/hierarchies"
 
-    @cached_property
+    @property
     def props(self):
-        with open(f"{self.path}/props.json") as f:
-            _props = json.load(f)
-        return _props
+        if self.__props is None:
+            with open(f"{self.path}/props.json") as f:
+                _props = json.load(f)
+            self.__props = _props
+        return self.__props
+
+    @property
+    def qids(self):
+        return [self.df.columns[x] for x in self.props["qi_index"]]
 
     @property
     def df(self):
