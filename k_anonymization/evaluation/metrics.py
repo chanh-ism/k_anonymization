@@ -18,7 +18,7 @@ def discernibility(
 
 
 def discernibility_from_algo(algo: Algorithm):
-    return discernability(
+    return discernibility(
         algo.anon_data,
         algo.dataset.qids,
         (
