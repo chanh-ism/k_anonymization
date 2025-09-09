@@ -38,10 +38,6 @@ class Dataset:
         return f"{os_path.dirname(__file__)}/{self.name}"
 
     @property
-    def hierarchies_dir(self):
-        return f"{self.path}/hierarchies"
-
-    @property
     def props(self):
         if self.__props is None:
             with open(f"{self.path}/props.json") as f:
@@ -54,6 +50,10 @@ class Dataset:
         return [self.df.columns[x] for x in self.props["qi_index"]]
 
     @property
+    def qids_idx(self):
+        return self.props["qi_index"]
+
+    @property
     def df(self):
         if self.__df is None:
             self.reload_df()
@@ -62,7 +62,7 @@ class Dataset:
     @property
     def hierarchies(self):
         if self.__hierarchies is None:
-            self.__hierarchies = HierarchiesDict(self.hierarchies_dir)
+            self.__hierarchies = HierarchiesDict(f"{self.path}/hierarchies")
         return self.__hierarchies
 
     def reload_df(self):
