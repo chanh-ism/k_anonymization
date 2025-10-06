@@ -1,6 +1,7 @@
 # +
 import random
 import time
+from typing import Literal
 
 from pandas import DataFrame
 from tqdm.auto import tqdm
@@ -8,7 +9,7 @@ from tqdm.auto import tqdm
 from k_anonymization.algorithms.type import Algorithm
 from k_anonymization.datasets import Dataset
 
-from .utils import get_distance, get_information_loss, get_num_ranges
+from .utils import *
 
 
 # -
@@ -18,10 +19,14 @@ class KMember(Algorithm):
         self,
         dataset: Dataset,
         k: int,
+        anon_method: Literal[
+            "summarization", "generalization", "mean_mode", "custom"
+        ] = "summarization",
     ):
         self.hierarchies = dataset.hierarchies
         self.qids_idx = dataset.qids_idx
         self.is_categorical = dataset.is_categorical
+        self.anon_method = anon_method
         super().__init__(dataset, k)
 
     def find_furthest_record_from_r(self, r, data):
@@ -128,12 +133,15 @@ class KMember(Algorithm):
     def anonymize_cluster(self, cluster):
         columns = list(zip(*cluster))
         for pos, idx in enumerate(self.qids_idx):
-            anon_value = None
-            if self.is_categorical[pos] == True:
-                anon_value = max(columns[idx], key=columns[idx].count)
-            else:
-                anon_value = sum(columns[idx]) / len(columns[idx])
-            columns[idx] = list(map(lambda x: anon_value, columns[idx]))
+            if self.anon_method == "generalization":
+                level = 0
+                while len(set(columns[idx])) > 1:
+                    columns[idx] = generalize(columns[idx], self.hierarchies[idx], level)
+                    level += 1
+            elif self.anon_method == "mean_mode":
+                columns[idx] = get_mean_mode(columns[idx], self.is_categorical[pos])
+            elif self.anon_method == "summarization":
+                columns[idx] = summarize(columns[idx], self.is_categorical[pos])
 
         return list(zip(*columns))
 
@@ -160,22 +168,3 @@ class KMember(Algorithm):
         self.anon_data = DataFrame(result, columns=list(self.anon_data))
 
 
-class Classic_Mondrian_KMember(KMember):
-    def __init__(
-        self,
-        dataset: Dataset,
-        k: int,
-    ):
-        super().__init__(dataset, k)
-
-    def anonymize_cluster(self, cluster):
-        columns = list(zip(*cluster))
-        for pos, idx in enumerate(self.qids_idx):
-            anon_value = None
-            if self.is_categorical[pos] == True:
-                anon_value = " ~ ".join(set(columns[idx]))
-            else:
-                anon_value = f"{min(columns[idx])} ~ {max(columns[idx])}"
-            columns[idx] = list(map(lambda x: anon_value, columns[idx]))
-
-        return list(zip(*columns))

@@ -1,5 +1,5 @@
-from .clustering_based import KMember, Classic_Mondrian_KMember
+from .clustering_based import KMember
 from .datafly.datafly import Datafly
 from .utils import *
 
-__all__ = ["Datafly", "KMember", "Classic_Mondrian_KMember"]
+__all__ = ["Datafly", "KMember"]

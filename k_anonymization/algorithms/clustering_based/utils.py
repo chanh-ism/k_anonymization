@@ -47,7 +47,7 @@ def get_information_loss(record, cluster, qids_idx, is_cat, num_ranges, hierarch
 
 
 def get_categorical_distance(values, hierarchy):
-    current_level = 0
+    level = 0
     generalized_values = values[:]
     height = (
         len(hierarchy["lambda"])
@@ -55,28 +55,48 @@ def get_categorical_distance(values, hierarchy):
         else len(hierarchy["hierarchy"])
     )
 
-    def generalize(_values, level):
-        if hierarchy["type"] == "lambda":
-            f = eval(hierarchy["lambda"][level])
-            if level == len(hierarchy["lambda"]) - 1:
-                is_suppressed = True
-        elif hierarchy["type"] == "list":
-            is_suppressed = hierarchy["hierarchy"][level]["is_suppressed"]
-            if is_suppressed:
-                f = lambda x: "*"
-            else:
-                generalized_values = hierarchy["hierarchy"][level]["values"]
-
-                def find_generalized_value(x):
-                    for generalized_value in generalized_values:
-                        if x in generalized_value["original"]:
-                            return generalized_value["generalized"]
-
-                f = lambda x: find_generalized_value(x)
-        return list(map(f, _values))
-
     while len(set(generalized_values)) > 1:
-        generalized_values = generalize(generalized_values, current_level)
-        current_level += 1
+        generalized_values = generalize(generalized_values, hierarchy, level)
+        level += 1
 
-    return current_level / height
+    return level / height
+
+
+def generalize(values, hierarchy, level):
+    if hierarchy["type"] == "lambda":
+        f = eval(hierarchy["lambda"][level])
+    elif hierarchy["type"] == "list":
+        is_suppressed = hierarchy["hierarchy"][level]["is_suppressed"]
+        if is_suppressed:
+            f = lambda x: "*"
+        else:
+            generalized_values = hierarchy["hierarchy"][level]["values"]
+
+            def find_generalized_value(x):
+                for generalized_value in generalized_values:
+                    if x in generalized_value["original"]:
+                        return generalized_value["generalized"]
+
+            f = lambda x: find_generalized_value(x)
+    return list(map(f, values))
+
+
+def summarize(values, is_cat):
+    anon_value = None
+    if is_cat == True:
+        try:
+            anon_value = " ~ ".join(set(values))
+        except:
+            anon_value = " ~ ".join([str(x) for x in set(values)])
+    else:
+        anon_value = f"{min(values)} ~ {max(values)}"
+    return list(map(lambda x: anon_value, values))
+
+
+def get_mean_mode(values, is_cat):
+    anon_value = None
+    if is_cat == True:
+        anon_value = max(values, key=values.count)
+    else:
+        anon_value = sum(values) / len(values)
+    return list(map(lambda x: anon_value, values))
