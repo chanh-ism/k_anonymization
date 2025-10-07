@@ -1,33 +1,27 @@
 # +
 import random
-import time
-from typing import Literal
 
-from pandas import DataFrame
 from tqdm.auto import tqdm
 
-from k_anonymization.algorithms.type import Algorithm
 from k_anonymization.datasets import Dataset
 
-from .utils import *
+from .type import ClusterAnonMethod, ClusteringBasedAlgorithm
+from .utils import get_distance, get_information_loss, get_max_ranges
 
 
 # -
 
-class KMember(Algorithm):
+class KMember(ClusteringBasedAlgorithm):
     def __init__(
         self,
         dataset: Dataset,
         k: int,
-        anon_method: Literal[
-            "summarization", "generalization", "mean_mode", "custom"
-        ] = "summarization",
+        anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
     ):
         self.hierarchies = dataset.hierarchies
         self.qids_idx = dataset.qids_idx
         self.is_categorical = dataset.is_categorical
-        self.anon_method = anon_method
-        super().__init__(dataset, k)
+        super().__init__(dataset, k, anon_method)
 
     def find_furthest_record_from_r(self, r, data):
         max_distance = 0
@@ -40,7 +34,7 @@ class KMember(Algorithm):
                 record,
                 self.qids_idx,
                 self.is_categorical,
-                self.num_ranges,
+                self.max_ranges,
                 self.hierarchies,
             )
             if this_distance > max_distance:
@@ -61,7 +55,7 @@ class KMember(Algorithm):
                 cluster,
                 self.qids_idx,
                 self.is_categorical,
-                self.num_ranges,
+                self.max_ranges,
                 self.hierarchies,
             )
             if this_information_loss < min_information_loss:
@@ -81,7 +75,7 @@ class KMember(Algorithm):
                 cluster,
                 self.qids_idx,
                 self.is_categorical,
-                self.num_ranges,
+                self.max_ranges,
                 self.hierarchies,
             )
             if this_information_loss < min_information_loss:
@@ -90,7 +84,14 @@ class KMember(Algorithm):
 
         return (best_idx, min_information_loss)
 
-    def do_clustering_kmember(self, data):
+    def do_clustering(self):
+        data = self.anon_data.values.tolist()
+        self.max_ranges = get_max_ranges(
+            data,
+            self.qids_idx,
+            self.is_categorical,
+            self.hierarchies,
+        )
         clusters = []
         information_losses = []
         r_i = None
@@ -128,43 +129,8 @@ class KMember(Algorithm):
             clusters[cluster_idx].append(r)
             progress_bar.update(1)
 
-        return (clusters, sum(information_losses))
+        self.information_loss = sum(information_losses)
 
-    def anonymize_cluster(self, cluster):
-        columns = list(zip(*cluster))
-        for pos, idx in enumerate(self.qids_idx):
-            if self.anon_method == "generalization":
-                level = 0
-                while len(set(columns[idx])) > 1:
-                    columns[idx] = generalize(columns[idx], self.hierarchies[idx], level)
-                    level += 1
-            elif self.anon_method == "mean_mode":
-                columns[idx] = get_mean_mode(columns[idx], self.is_categorical[pos])
-            elif self.anon_method == "summarization":
-                columns[idx] = summarize(columns[idx], self.is_categorical[pos])
-
-        return list(zip(*columns))
-
-    def anonymize(self):
-        data = self.anon_data.values.tolist()[0:1000]
-        self.num_ranges = get_num_ranges(
-            data,
-            self.qids_idx,
-            self.is_categorical,
-        )
-        result = []
-        clusters, self.information_loss = self.do_clustering_kmember(data)
-
-        progress_bar = tqdm(
-            total=len(clusters),
-            desc="Anonymization Progress",
-            bar_format="{l_bar}{bar:20}|{n_fmt}/{total_fmt} [{elapsed}]",
-        )
-
-        for cluster in clusters:
-            result.extend(self.anonymize_cluster(cluster))
-
-        progress_bar.close()
-        self.anon_data = DataFrame(result, columns=list(self.anon_data))
+        return clusters
 
 

@@ -1,30 +1,42 @@
-def get_num_ranges(data, qids_idx, is_cat):
-    num_ranges = {}
+def get_max_ranges(data, qids_idx, is_cat, hierarchies):
+    max_ranges = []
 
     columns = list(zip(*data))
     for pos, idx in enumerate(qids_idx):
+        max_ranges.extend([None] * (idx - len(max_ranges)))
         if is_cat[pos] == True:
-            continue
-        num_ranges[str(idx)] = max(columns[idx]) - min(columns[idx])
+            max_ranges.append(
+                len(hierarchies[idx]["lambda"])
+                if hierarchies[idx]["type"] == "lambda"
+                else len(hierarchies[idx]["hierarchy"])
+            )
+        else:
+            max_ranges.append(max(columns[idx]) - min(columns[idx]))
 
-    return num_ranges
+    max_ranges.extend([None] * (len(columns) - len(max_ranges)))
+
+    return max_ranges
 
 
-def get_distance(r, record, qids_idx, is_cat, num_ranges, hierarchies):
+def get_distance(r, record, qids_idx, is_cat, max_ranges, hierarchies):
     distances = []
 
     for pos, idx in enumerate(qids_idx):
         if is_cat[pos] == True:
             distances.append(
-                get_categorical_distance([r[idx], record[idx]], hierarchies[idx])
+                get_categorical_distance(
+                    [r[idx], record[idx]],
+                    hierarchies[idx],
+                    max_ranges[idx],
+                )
             )
         else:
-            distances.append(abs(r[idx] - record[idx]) / num_ranges[str(idx)])
+            distances.append(abs(r[idx] - record[idx]) / max_ranges[idx])
 
     return sum(distances)
 
 
-def get_information_loss(record, cluster, qids_idx, is_cat, num_ranges, hierarchies):
+def get_information_loss(record, cluster, qids_idx, is_cat, max_ranges, hierarchies):
     information_losses = []
     if record == None:
         size = len(cluster)
@@ -36,24 +48,21 @@ def get_information_loss(record, cluster, qids_idx, is_cat, num_ranges, hierarch
     for pos, idx in enumerate(qids_idx):
         if is_cat[pos] == True:
             information_losses.append(
-                get_categorical_distance(columns[idx], hierarchies[idx])
+                get_categorical_distance(
+                    columns[idx], hierarchies[idx], max_ranges[idx]
+                )
             )
         else:
             information_losses.append(
-                (max(columns[idx]) - min(columns[idx])) / num_ranges[str(idx)]
+                (max(columns[idx]) - min(columns[idx])) / max_ranges[idx]
             )
 
     return size * sum(information_losses)
 
 
-def get_categorical_distance(values, hierarchy):
+def get_categorical_distance(values, hierarchy, height):
     level = 0
     generalized_values = values[:]
-    height = (
-        len(hierarchy["lambda"])
-        if hierarchy["type"] == "lambda"
-        else len(hierarchy["hierarchy"])
-    )
 
     while len(set(generalized_values)) > 1:
         generalized_values = generalize(generalized_values, hierarchy, level)
