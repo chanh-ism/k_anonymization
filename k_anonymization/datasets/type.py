@@ -97,4 +97,4 @@ class Dataset:
         self.__df = read_csv(f"{self.path}/{self.name}.csv")
 
     def _repr_html_(self):
-        return self.df.to_html()
+        return self.df._repr_html_()
