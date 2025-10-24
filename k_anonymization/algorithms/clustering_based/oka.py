@@ -106,6 +106,7 @@ class OKA(ClusteringBasedAlgorithm):
         self.hierarchies = dataset.hierarchies
         self.qids_idx = dataset.qids_idx
         self.is_categorical = dataset.is_categorical
+        self.max_ranges = get_max_ranges(dataset)
         super().__init__(dataset, k, anon_method)
 
     def find_best_cluster(self, record, clusters):
@@ -122,12 +123,6 @@ class OKA(ClusteringBasedAlgorithm):
 
     def do_clustering(self):
         data = self.anon_data.values.tolist()
-        self.max_ranges = get_max_ranges(
-            data,
-            self.qids_idx,
-            self.is_categorical,
-            self.hierarchies,
-        )
         clusters = []
 
         for i in range(int(len(data) / self.k)):
