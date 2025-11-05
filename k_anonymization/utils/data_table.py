@@ -21,15 +21,13 @@ css = """
   padding-left: 4px;
 }
 
-div.dtsp-panesContainer div.dtsp-searchPanes div.dtsp-searchPane {
-  border: 0.5px solid lightgrey;
-  border-radius: 4px;
+div.dtsp-searchPane div.dtsp-topRow {
+  border: 0.5px solid lightgrey !important;
 }
-
 """
 display(HTML(f"<style>{css}</style>" ""))
 
-init_notebook_mode(all_interactive=True)
+init_notebook_mode(all_interactive=True, connected=True)
 
 
 def show(
@@ -64,7 +62,6 @@ def show(
     _layout["top2"] = {
         "id": f"{_table_name}-buttons",
         "features": [
-            "pageLength",
             {
                 "buttons": [
                     {
@@ -78,15 +75,32 @@ def show(
                             "dtOpts": {"order": [[1, "desc"], [0, "asc"]]},
                         },
                     },
-                    "searchBuilder",
+                    {
+                        # "extend": "collection",
+                        "text": "Reset All",
+                        "action": JavascriptFunction(
+                            """
+                            function (e, dt, node, config) {
+                                dt.columns().ccSearchClear()
+                                dt.searchPanes.clearSelections()
+                                dt.draw()
+                            }
+                            """
+                        ),
+                        "split": [
+                            {"extend": "searchPanesClear", "text": "Reset Filters"},
+                            {"extend": "ccSearchClear", "text": "Reset Search"},
+                        ]                      
+                    },
                 ]
             },
+            "pageLength",
         ],
     }
 
     table_css = f"""
-        #{_table_name}-buttons .dt-button-collection {"{"}
-            padding: 8px;
+        #{_table_name}-buttons .dt-button-collection.dtb-collection-closeable {"{"}
+            padding: 0.5rem 0.5rem 1rem 0.5rem;
             left: 0 !important;
             overflow-y: auto !important;
             max-height: -moz-available;
@@ -109,4 +123,6 @@ def show(
                 "collapse": {0: "Filters", "_": "Filters (%d)"},
             }
         },
+        columnControl=['searchDropdown'],
+        ordering={"indicators": False},
     )
