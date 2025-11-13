@@ -4,9 +4,6 @@ from itables import show as itables_show
 from pandas.core.frame import DataFrame
 
 css = """
-.jp-RenderedJSON .filter {
-  display: none;
-}
 .dt-scroll {
   margin: 0 0 !important;
 }
@@ -15,6 +12,7 @@ css = """
 }
 .dt-scroll-body {
   height: auto !important;
+  border-bottom: none !important;
 }
 
 .dt-length label {
@@ -24,10 +22,17 @@ css = """
 div.dtsp-searchPane div.dtsp-topRow {
   border: 0.5px solid lightgrey !important;
 }
+
+thead:has(.no-header) {
+  display: none;
+}
 """
 display(HTML(f"<style>{css}</style>" ""))
 
-init_notebook_mode(all_interactive=True, connected=True)
+init_notebook_mode(
+    # all_interactive=True, 
+    connected=True,
+)
 
 
 def show(

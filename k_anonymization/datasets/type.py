@@ -3,7 +3,12 @@ import json
 from functools import cached_property
 from os import path as os_path
 
-from pandas import read_csv
+from graphviz import Digraph
+from ipywidgets import Dropdown, Image, Label, Layout, Stack, VBox, jslink
+from itables import show as itables_show
+from pandas import DataFrame, read_csv
+
+from k_anonymization.utils.data_table import show
 
 
 # -
@@ -15,6 +20,7 @@ class HierarchiesDict(dict):
         num_of_attributes: int,
         qids: list,
         qids_idx: list,
+        is_categorical: list,
     ):
         self.hierarchies_dir = hierarchies_dir
         self.__qids = []
@@ -22,21 +28,83 @@ class HierarchiesDict(dict):
             self.__qids.extend([None] * (qids_idx[pos] - len(self.__qids)))
             self.__qids.append(qid)
         self.__qids.extend([None] * (num_of_attributes - len(self.__qids)))
+        self.cat_qids = [qids[i] for i, v in enumerate(is_categorical) if v is True]
 
     def __getitem__(self, key):
         if isinstance(key, int):
             _key = self.__qids[key]
             if _key is None:
-                raise AttributeError(f"Cannot find hierarchy for attribute at index '{key}'")
+                raise AttributeError(
+                    f"Cannot find hierarchy for attribute at index '{key}'"
+                )
         else:
             _key = key
         if _key not in self.keys():
             try:
                 with open(f"{self.hierarchies_dir}/{_key}.json") as f:
-                    super().__setitem__(_key, json.load(f))
+                    super().__setitem__(_key, HierarchyDict(json.load(f)))
             except:
                 raise FileNotFoundError(f'Cannot find the hierarchy "{_key}".')
         return super().__getitem__(_key)
+
+    def display_all_trees(self):
+        if self.cat_qids == []:
+            return "No Categorical Attribute"
+        children = [
+            Image(
+                value=self.__getitem__(cat_qid).display_tree().pipe(format="png"),
+                format="png",
+                layout=Layout(max_width="unset"),
+            )
+            for cat_qid in self.cat_qids
+        ]
+        stack = Stack(children, selected_index=0)
+        dropdown = Dropdown(options=self.cat_qids)
+        jslink((dropdown, "index"), (stack, "selected_index"))
+        return VBox([Label("Categorical Taxonomy Tree:"), dropdown, stack])
+
+
+class HierarchyDict(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "tree" in self.keys():
+            self.height = len(self.__getitem__("tree"))
+            self.is_categorical = True
+        else:
+            self.is_categorical = False
+
+    def display_tree(self):   
+        assert "tree" in self.keys(), 'Property "tree" not provided'
+        tree = Digraph(
+            edge_attr={"arrowhead": "none"},
+            node_attr={"shape": "plaintext"},
+        )
+        name = self.__getitem__("name")
+        if self.height == 1:
+            tree.edge(f"(1)\n{name}", "All values")
+            return tree
+        for index, node in enumerate(self.__getitem__("tree")[:-1]):
+            for values in node["values"]:
+                tree.edges(
+                    [
+                        [
+                            f'({index + 1})\n{values["generalized"]}',
+                            f'{f"({index})\n" if index != 0 else ''}{v}',
+                        ]
+                        for v in values["original"]
+                    ]
+                )
+            if index >= self.height - 2:
+                tree.edges(
+                    [
+                        [
+                            f"({index + 2})\n{name}",
+                            f'({index + 1})\n{values["generalized"]}',
+                        ]
+                        for values in node["values"]
+                    ]
+                )
+        return tree
 
 
 class Dataset:
@@ -50,7 +118,7 @@ class Dataset:
         Dataset.all_datasets.append(self)
 
     def __str__(self):
-        return self.name
+        return self.name.upper()
 
     @cached_property
     def path(self):
@@ -76,6 +144,38 @@ class Dataset:
     def is_categorical(self):
         return self.props["is_category"]
 
+    @cached_property
+    def info(self):
+        _info_all = {}
+        for col_idx, col in enumerate(list(self.df)):
+            if col_idx not in self.qids_idx:
+                _info = ["", "", ""]
+            else:
+                _info = [
+                    "o" if col_idx in self.qids_idx else "",
+                    (
+                        "o"
+                        if self.is_categorical[self.qids_idx.index(col_idx)] is False
+                        else ""
+                    ),
+                    (
+                        "o"
+                        if self.is_categorical[self.qids_idx.index(col_idx)] is True
+                        else ""
+                    ),
+                ]
+            _info.append(self.df[col].unique().size)
+            _info_all[col] = _info
+        return DataFrame(
+            _info_all,
+            index=[
+                "Quasi-Identifier (QID)",
+                "Numerical Attribute",
+                "Categorical Attribute",
+                "No. of Unique Values",
+            ],
+        )
+
     @property
     def df(self):
         if self.__df is None:
@@ -90,11 +190,53 @@ class Dataset:
                 len(list(self.df)),
                 self.qids,
                 self.qids_idx,
+                self.is_categorical,
             )
         return self.__hierarchies
 
     def reload_df(self):
         self.__df = read_csv(f"{self.path}/{self.name}.csv")
 
+    def describe(self):
+        itables_show(
+            DataFrame(
+                [
+                    self.name.upper(),
+                    self.df.shape[0],
+                    self.df.shape[1],
+                ],
+                index=[
+                    "Dataset Name",
+                    "No. of Records",
+                    "No. of Attributes",
+                ],
+            ),
+            scrollX=True,
+            ordering={"indicators": False},
+            columnDefs=[
+                {
+                    "className": "no-header",
+                    "target": "_all",
+                }
+            ],
+        )
+
+        itables_show(
+            self.info,
+            fixedColumns={"start": 1},
+            scrollX=True,
+            ordering={"indicators": False},
+            columnDefs=[
+                {
+                    "className": "dt-center",
+                    "target": "_all",
+                }
+            ],
+        )
+
+    def display(self):
+        show(self.df, self.name.upper())
+
     def _repr_html_(self):
-        return self.df._repr_html_()
+        self.display()
+        return "<i hidden></i>"
