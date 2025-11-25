@@ -9,6 +9,12 @@ from ..utils import generalize_column
 from .type import ClusterAnonMethod, ClusteringBasedAlgorithm
 from .utils import get_distance, get_information_loss, get_max_ranges
 
+try:
+    __IPYTHON__
+    _bar_format = None
+except:
+    _bar_format = "{l_bar}{bar:20}|{n_fmt}/{total_fmt} [{elapsed}]"
+
 
 # -
 
@@ -140,7 +146,7 @@ class OKA(ClusteringBasedAlgorithm):
         clustering_progress_bar = tqdm(
             total=len(data),
             desc="   Clustering Progress",
-            bar_format="{l_bar}{bar:20}|{n_fmt}/{total_fmt} [{elapsed}]",
+            bar_format=_bar_format,
         )
 
         # Clustering Stage
@@ -154,7 +160,7 @@ class OKA(ClusteringBasedAlgorithm):
         adjustment_progress_bar = tqdm(
             total=(len(clusters) * 2),
             desc="   Adjustment Progress",
-            bar_format="{l_bar}{bar:20}|{n_fmt}/{total_fmt} [{elapsed}]",
+            bar_format=_bar_format,
         )
 
         # Adjustment Stage
