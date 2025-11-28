@@ -130,3 +130,4 @@ class Perturbation(Algorithm):
     def anonymize(self):
         self.do_retention_replacement()
         self.do_laplacian_noise()
+        self._construct_anon_data(self.anon_data, columns=list(self.anon_data))

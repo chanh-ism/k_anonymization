@@ -26,11 +26,13 @@ class KMember(ClusteringBasedAlgorithm):
         self,
         dataset: Dataset,
         k: int,
+        seed: int = None,
         anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
         parallel: bool = False,
         cpu_cores: int = cpu_count() - 1,
     ):
         super().__init__(dataset, k, anon_method)
+        self.seed = seed
         self.cpu_cores = cpu_cores
         self.is_parallel = parallel
         self.__parallel = Parallel(cpu_cores)
@@ -100,6 +102,7 @@ class KMember(ClusteringBasedAlgorithm):
 
         while len(data) >= self.k:
             if r_i is None:
+                random.seed(self.seed)
                 r_i_idx = random.randrange(len(data))
                 r_i = data[r_i_idx]
             else:

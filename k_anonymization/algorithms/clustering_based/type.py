@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 
+from numpy import arange
 from pandas import DataFrame
 
 from k_anonymization.algorithms.type import Algorithm
@@ -34,11 +35,14 @@ class ClusteringBasedAlgorithm(Algorithm):
         super().__init__(dataset, k)
 
     def anonymize(self):
+        self.anon_data["__ID"] = arange(self.anon_data.shape[0])
         clusters = self.do_clustering()
         result = []
         for cluster in clusters:
             result.extend(self.anonymize_cluster(cluster))
-        self._construct_anon_data(result, columns=list(self.org_data))
+        self._construct_anon_data(result, columns=(list(self.org_data)+["__ID"]))
+        self.anon_data.sort_values("__ID", inplace=True, ignore_index=True)
+        self.anon_data.pop("__ID")
 
     @abstractmethod
     def do_clustering(self):

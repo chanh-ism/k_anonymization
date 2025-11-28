@@ -107,8 +107,10 @@ class OKA(ClusteringBasedAlgorithm):
         self,
         dataset: Dataset,
         k: int,
+        seed: int = None,
         anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
     ):
+        self.seed = seed
         self.hierarchies = dataset.hierarchies
         self.qids_idx = dataset.qids_idx
         self.is_categorical = dataset.is_categorical
@@ -128,20 +130,25 @@ class OKA(ClusteringBasedAlgorithm):
         return best_idx
 
     def do_clustering(self):
-        data = self.anon_data.values.tolist()
         clusters = []
 
-        for i in range(int(len(data) / self.k)):
-            r_i_idx = random.randrange(len(data))
+        random.seed(self.seed)
+        for r_i_idx in random.sample(
+            range(0, self.anon_data.shape[0]),
+            int(self.anon_data.shape[0] / self.k),
+        ):
             clusters.append(
                 OKA_Cluster(
-                    data.pop(r_i_idx),
+                    self.anon_data.loc[r_i_idx].tolist(),
                     self.qids_idx,
                     self.is_categorical,
                     self.max_ranges,
                     self.hierarchies,
                 )
             )
+            self.anon_data.drop(r_i_idx, inplace=True)
+
+        data = self.anon_data.values.tolist()
 
         clustering_progress_bar = tqdm(
             total=len(data),
