@@ -89,9 +89,9 @@ def summarize(values, is_cat):
     anon_value = None
     if is_cat == True:
         try:
-            anon_value = " ~ ".join(set(values))
+            anon_value = " & ".join(set(values))
         except:
-            anon_value = " ~ ".join([str(x) for x in set(values)])
+            anon_value = " & ".join([str(x) for x in set(values)])
     else:
         if len(set(values)) == 1:
             anon_value = f"{values[0]}"

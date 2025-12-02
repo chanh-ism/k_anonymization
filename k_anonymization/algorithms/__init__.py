@@ -1,6 +1,6 @@
-from .clustering_based import KMember, OKA
+from .clustering_based import ClassicMondrian, KMember, OKA
 from .datafly.datafly import Datafly
 from .probabilistic import Perturbation
 from .utils import *
 
-__all__ = ["Datafly", "KMember", "OKA", "Perturbation"]
+__all__ = ["Datafly", "ClassicMondrian", "KMember", "OKA", "Perturbation"]

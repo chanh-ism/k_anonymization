@@ -25,12 +25,12 @@ class KMember(ClusteringBasedAlgorithm):
         self,
         dataset: Dataset,
         k: int,
+        cluster_anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
         seed: int = None,
-        anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
         parallel: bool = False,
         cpu_cores: int = Parallel.max_cores - 1,
     ):
-        super().__init__(dataset, k, anon_method)
+        super().__init__(dataset, k, cluster_anon_method)
         self.seed = seed
         self.cpu_cores = cpu_cores
         self.is_parallel = parallel

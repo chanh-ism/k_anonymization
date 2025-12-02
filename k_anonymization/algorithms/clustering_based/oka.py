@@ -27,19 +27,16 @@ class OKA(ClusteringBasedAlgorithm):
         self,
         dataset: Dataset,
         k: int,
+        cluster_anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
         seed: int = None,
-        anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
         parallel: bool = False,
         cpu_cores: int = Parallel.max_cores - 1,
     ):
-        super().__init__(dataset, k, anon_method)
+        super().__init__(dataset, k, cluster_anon_method)
         self.seed = seed
         self.cpu_cores = cpu_cores
         self.is_parallel = parallel
         self.__parallel = Parallel(cpu_cores)
-        self.hierarchies = dataset.hierarchies
-        self.qids_idx = dataset.qids_idx
-        self.is_categorical = dataset.is_categorical
         self.max_ranges = get_max_ranges(dataset)
         self.__get_distance_parallel = partial(_oka_get_distance_parallel)
         self.__init_cluster = partial(

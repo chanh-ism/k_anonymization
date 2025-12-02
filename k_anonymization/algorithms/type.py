@@ -22,7 +22,7 @@ class Algorithm(ABC):
 
     def __reset(self, anonymize_func):
         def wrapper(*args, **kwargs):
-            self.anon_data = self.org_data.copy(deep=True)
+            self.anon_data = self.org_data[:]
             self.suppressed_qids = None
             return anonymize_func(self, *args, **kwargs)
 

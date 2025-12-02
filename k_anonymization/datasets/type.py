@@ -29,6 +29,9 @@ class DataFrameTable(DataFrame):
         show(self, self.table_name)
         return "<i hidden></i>"
 
+    def show_whole_table(self):
+        show(self, self.table_name, max_bytes=0)
+
 
 class HierarchiesDict(dict):
     def __init__(
