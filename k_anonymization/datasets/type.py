@@ -197,6 +197,32 @@ class Dataset:
         return self.props["is_category"]
 
     @cached_property
+    def target(self):
+        return self.props["target"]
+
+    @cached_property
+    def qids_categorial(self):
+        return [qid for pos, qid in enumerate(self.qids) if self.is_categorical[pos]]
+
+    @cached_property
+    def qids_numerical(self):
+        return [qid for pos, qid in enumerate(self.qids) if not self.is_categorical[pos]]
+
+    @cached_property
+    def qids_idx_categorial(self):
+        return [idx for pos, idx in enumerate(self.qids_idx) if self.is_categorical[pos]]
+
+    @cached_property
+    def qids_idx_numerical(self):
+        return [idx for pos, idx in enumerate(self.qids_idx) if not self.is_categorical[pos]]
+
+    # TODO: Update other modules to use 
+    # - qids_categorial
+    # - qids_numerical
+    # - qids_idx_categorial
+    # - qids_idx_numerical
+
+    @cached_property
     def info(self):
         _info_all = {}
         for col_idx, col in enumerate(list(self.df)):
