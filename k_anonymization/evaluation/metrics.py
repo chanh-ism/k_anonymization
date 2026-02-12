@@ -197,7 +197,7 @@ class MLClassificationMetrics:
         _df = df if df is not None else dataset.df
         self.target = dataset.target
         self.features = (
-            [] if features != [] else [x for x in list(_df) if x != self.target]
+            features if features != [] else [x for x in list(_df) if x != self.target]
         )
         self.label_encoder = LabelEncoder()
         self.validation_df = validation_df
