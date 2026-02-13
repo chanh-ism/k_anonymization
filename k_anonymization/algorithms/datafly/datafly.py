@@ -33,7 +33,7 @@ class Datafly(Algorithm):
         qids = self.dataset.qids
         qids_idx = self.dataset.qids_idx
         np_anon_data = self.anon_data.values
-        hierarchies_tracking = {}
+        self.hierarchies_tracking = dict.fromkeys(qids, 0)
 
         while True:
             if self.suppression_threshold == 0 and is_k_anonymized(
@@ -64,17 +64,14 @@ class Datafly(Algorithm):
             generalized_att_idx, generalized_att = self.pick_attribute(
                 np_anon_data, qids_idx, qids
             )
-            if generalized_att in list(hierarchies_tracking):
-                hierarchies_tracking[generalized_att] = (
-                    hierarchies_tracking[generalized_att] + 1
-                )
-            else:
-                hierarchies_tracking[generalized_att] = 0
-            generalize(
+            self.hierarchies_tracking[generalized_att] += 1
+            _, is_suppressed = generalize(
                 np_anon_data,
                 self.dataset.hierarchies[generalized_att],
                 generalized_att_idx,
-                hierarchies_tracking[generalized_att],
+                self.hierarchies_tracking[generalized_att],
             )
+            if is_suppressed:
+                self.hierarchies_tracking[generalized_att] = -1
 
         self._construct_anon_data(np_anon_data, columns=list(self.anon_data))
