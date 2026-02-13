@@ -6,7 +6,7 @@ def generalize_df(df: DataFrame, hierarchy: dict, level: int):
     is_suppressed = False
 
     np_data, is_suppressed = generalize(
-        df.values, hierarchy, list(df).index(hierarchy["name"]), level
+        df.to_numpy(copy=True), hierarchy, list(df).index(hierarchy["name"]), level
     )
 
     return DataFrame(np_data, columns=list(df)), is_suppressed

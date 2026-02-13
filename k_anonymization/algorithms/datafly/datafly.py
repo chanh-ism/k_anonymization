@@ -64,7 +64,6 @@ class Datafly(Algorithm):
             generalized_att_idx, generalized_att = self.pick_attribute(
                 np_anon_data, qids_idx, qids
             )
-            self.hierarchies_tracking[generalized_att] += 1
             _, is_suppressed = generalize(
                 np_anon_data,
                 self.dataset.hierarchies[generalized_att],
@@ -73,5 +72,7 @@ class Datafly(Algorithm):
             )
             if is_suppressed:
                 self.hierarchies_tracking[generalized_att] = -1
+            else:
+                self.hierarchies_tracking[generalized_att] += 1
 
         self._construct_anon_data(np_anon_data, columns=list(self.anon_data))
