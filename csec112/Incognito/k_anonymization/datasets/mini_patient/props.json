@@ -1,0 +1,6 @@
+{
+    "qi_index": [0,2],
+    "target": "disease",
+    "is_category": [false, false],
+    "max_numeric": {}
+}

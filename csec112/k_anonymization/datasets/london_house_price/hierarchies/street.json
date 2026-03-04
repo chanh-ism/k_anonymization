@@ -1,0 +1,11 @@
+{
+  "name": "street",
+  "lambda": [
+    "lambda x: '*'"
+  ],
+  "tree": [
+      {
+          "is_suppressed": true
+      }
+  ] 
+}

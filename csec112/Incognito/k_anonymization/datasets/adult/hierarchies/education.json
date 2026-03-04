@@ -1,0 +1,79 @@
+{
+    "name": "education",
+    "tree": [
+        {
+            "is_suppressed": false,
+            "values": [
+                {
+                    "original": [
+                        "Bachelors",
+                        "Some-college"
+                    ],
+                    "generalized": "Undergraduate"
+                },
+                {
+                    "original": [
+                        "11th",
+                        "HS-grad",
+                        "9th",
+                        "7th-8th",
+                        "12th",
+                        "10th"
+                    ],
+                    "generalized": "High School"
+                },
+                {
+                    "original": [
+                        "Prof-school",
+                        "Assoc-acdm",
+                        "Assoc-voc"
+                    ],
+                    "generalized": "Professional Education"
+                },
+                {
+                    "original": [
+                        "Masters",
+                        "Doctorate"
+                    ],
+                    "generalized": "Graduate"
+                },
+                {
+                    "original": [
+                        "1st-4th",
+                        "5th-6th",
+                        "Preschool"
+                    ],
+                    "generalized": "Primary School"
+                }
+            ]
+        },
+        {
+            "is_suppressed": false,
+            "values": [
+                {
+                    "original": [
+                        "Undergraduate",
+                        "Professional Education",
+                        "Graduate"
+                    ],
+                    "generalized": "Higher education"
+                },
+                {
+                    "original": [
+                        "High School"
+                    ],
+                    "generalized": "Secondary education"
+                },
+                {
+                    "original": [
+                        "Primary School"
+                    ],
+                    "generalized": "Primary education"
+                }
+            ]
+        },
+        {
+            "is_suppressed": true
+        }
+    ]
+}

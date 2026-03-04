@@ -1,0 +1,137 @@
+from IPython.display import HTML, display
+from itables import init_notebook_mode, JavascriptFunction
+from itables import show as itables_show
+from pandas.core.frame import DataFrame
+
+css = """
+.dt-scroll {
+  margin: 0 0 !important;
+}
+.dtsp-panesContainer {
+  width: 100% !important;
+}
+.dt-scroll-body {
+  height: auto !important;
+  border-bottom: none !important;
+}
+
+.dt-length label {
+  padding-left: 4px;
+}
+
+div.dtsp-searchPane div.dtsp-topRow {
+  border: 0.5px solid lightgrey !important;
+}
+
+thead:has(.no-header) {
+  display: none;
+}
+"""
+
+__init = False
+
+
+def show(
+    data: DataFrame,
+    table_name: str = None,
+    search_columns_per_row: int = 4,
+    max_bytes: str = "64KB",
+):
+    global __init
+    if not __init:
+        display(HTML(f"<style>{css}</style>" ""))
+        init_notebook_mode(
+            # all_interactive=True, 
+            connected=True,
+        )
+        __init = True
+    _layout = {
+        "topStart": None,
+        "topEnd": None,
+        "bottomStart": None,
+        "bottomEnd": None,
+        "bottom1": ["paging"],
+        "bottom2": ["info"],
+    }
+    if table_name:
+        _table_name = table_name.replace(" ", "_").lower()
+        _layout["top1"] = JavascriptFunction(
+            f"""
+            function () {'{'}
+                let toolbar = document.createElement('div');
+                toolbar.innerHTML = '<h2 align="center" style="margin-top: 0">{table_name}</h2>';
+     
+                return toolbar;
+            {'}'}
+            """
+        )
+    else:
+        _table_name = "custom-itables"
+
+    _layout["top2"] = {
+        "id": f"{_table_name}-buttons",
+        "features": [
+            {
+                "buttons": [
+                    {
+                        "extend": "searchPanes",
+                        "config": {
+                            "threshold": 1,
+                            "columns": [i for i in range(1, len(data.keys()))],
+                            "layout": f"columns-{search_columns_per_row}",
+                            "cascadePanes": True,
+                            "initCollapsed": True,
+                            "dtOpts": {"order": [[1, "desc"], [0, "asc"]]},
+                        },
+                    },
+                    {
+                        # "extend": "collection",
+                        "text": "Reset All",
+                        "action": JavascriptFunction(
+                            """
+                            function (e, dt, node, config) {
+                                dt.columns().ccSearchClear()
+                                dt.searchPanes.clearSelections()
+                                dt.draw()
+                            }
+                            """
+                        ),
+                        "split": [
+                            {"extend": "searchPanesClear", "text": "Reset Filters"},
+                            {"extend": "ccSearchClear", "text": "Reset Search"},
+                        ]                      
+                    },
+                ]
+            },
+            "pageLength",
+        ],
+    }
+
+    table_css = f"""
+        #{_table_name}-buttons .dt-button-collection.dtb-collection-closeable {"{"}
+            padding: 0.5rem 0.5rem 1rem 0.5rem;
+            left: 0 !important;
+            overflow-y: auto !important;
+            max-height: -moz-available;
+            max-height: -webkit-fill-available;
+            max-height: fill-available;
+        {"}"}
+        #{_table_name}-buttons div.dtsp-searchPanes {"{"}
+            width: 100% !important;
+            column-gap: 1% !important;
+            justify-content: flex-start !important;
+        {"}"}
+    """
+    display(HTML(f"<style>{table_css}</style>" ""))
+    itables_show(
+        data,
+        maxBytes=max_bytes,
+        layout=_layout,
+        language={
+            "searchPanes": {
+                "collapse": {0: "Filters", "_": "Filters (%d)"},
+            }
+        },
+        columnControl=['searchDropdown'],
+        ordering={"indicators": False},
+    )

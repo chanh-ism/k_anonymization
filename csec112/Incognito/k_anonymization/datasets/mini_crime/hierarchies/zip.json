@@ -1,0 +1,11 @@
+{
+  "name": "zip",
+  "type": "lambda",
+  "lambda": [
+    "lambda x: f'{x//10}*'",
+    "lambda x: f'{int(x.split(\"*\")[0])//10}**'",
+    "lambda x: f'{int(x.split(\"**\")[0])//10}***'",
+    "lambda x: f'{int(x.split(\"***\")[0])//10}****'",
+    "lambda x: '*'"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "salary-class",
+  "lambda": [
+    "lambda x: '*'"
+  ],
+  "tree": [
+      {
+          "is_suppressed": true
+      }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+    "name": "native-country",
+    "tree": [
+        {
+            "is_suppressed": false,
+            "values": [
+                {
+                    "original": [
+                        "United-States",
+                        "Puerto-Rico",
+                        "Canada",
+                        "Outlying-US(Guam-USVI-etc)",
+                        "Cuba",
+                        "Honduras",
+                        "Jamaica",
+                        "Mexico",
+                        "Dominican-Republic",
+                        "Haiti",
+                        "Guatemala",
+                        "El-Salvador"
+                    ],
+                    "generalized": "North America"
+                },
+                {
+                    "original": [
+                        "Cambodia",
+                        "India",
+                        "Japan",
+                        "China",
+                        "Iran",
+                        "Philippines",
+                        "Vietnam",
+                        "Laos",
+                        "Taiwan",
+                        "Thailand",
+                        "Hong"
+                    ],
+                    "generalized": "Asia"
+                },
+                {
+                    "original": [
+                        "England",
+                        "Germany",
+                        "Greece",
+                        "Italy",
+                        "Poland",
+                        "Portugal",
+                        "Ireland",
+                        "France",
+                        "Hungary",
+                        "Scotland",
+                        "Yugoslavia",
+                        "Holand-Netherlands"
+                    ],
+                    "generalized": "Europe"
+                },
+                {
+                    "original": [
+                        "South"
+                    ],
+                    "generalized": "Africa"
+                },
+                {
+                    "original": [
+                        "Ecuador",
+                        "Columbia",
+                        "Nicaragua",
+                        "Trinadad&Tobago",
+                        "Peru"
+                    ],
+                    "generalized": "South America"
+                }
+            ]
+        },
+        {
+            "is_suppressed": true
+        }
+    ]
+}

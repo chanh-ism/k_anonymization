@@ -1,0 +1,69 @@
+{
+    "name": "district",
+    "tree": [
+        {
+            "is_suppressed": false,
+            "values": [
+                {
+                    "original": [
+                        "CAMDEN",
+                        "CITY OF LONDON",
+                        "ISLINGTON",
+                        "KENSINGTON AND CHELSEA",
+                        "LAMBETH",
+                        "SOUTHWARK",
+                        "CITY OF WESTMINSTER"
+                    ],
+                    "generalized": "Central London"
+                },
+                {
+                    "original": [
+                        "BARNET",
+                        "ENFIELD",
+                        "HARINGEY"
+                    ],
+                    "generalized": "North London"
+                },
+                {
+                    "original": [
+                        "BROMLEY",
+                        "CROYDON",
+                        "KINGSTON UPON THAMES",
+                        "MERTON",
+                        "RICHMOND UPON THAMES",
+                        "WANDSWORTH"
+                    ],
+                    "generalized": "South London"
+                },
+                {
+                    "original": [
+                        "BARKING AND DAGENHAM",
+                        "BEXLEY",
+                        "GREENWICH",
+                        "HACKNEY",
+                        "HAVERING",
+                        "LEWISHAM",
+                        "NEWHAM",
+                        "REDBRIDGE",
+                        "TOWER HAMLETS",
+                        "WALTHAM FOREST"
+                    ],
+                    "generalized": "East London"
+                },
+                {
+                    "original": [
+                        "BRENT",
+                        "EALING",
+                        "HAMMERSMITH AND FULHAM",
+                        "HARROW",
+                        "HOUNSLOW"
+                    ],
+                    "generalized": "West London"
+                }
+            ]
+        },
+        {
+            "is_suppressed": true
+        }
+    ]
+}

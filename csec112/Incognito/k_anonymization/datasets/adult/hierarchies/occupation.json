@@ -1,0 +1,42 @@
+{
+    "name": "occupation",
+    "tree": [
+        {
+            "is_suppressed": false,
+            "values": [
+                {
+                    "original": [
+                        "Tech-support",
+                        "Craft-repair",
+                        "Prof-specialty",
+                        "Machine-op-inspct"
+                    ],
+                    "generalized": "Technical"
+                },
+                {
+                    "original": [
+                        "Other-service",
+                        "Adm-clerical",
+                        "Farming-fishing",
+                        "Transport-moving",
+                        "Priv-house-serv",
+                        "Protective-serv",
+                        "Armed-Forces"
+                    ],
+                    "generalized": "Other"
+                },
+                {
+                    "original": [
+                        "Sales",
+                        "Exec-managerial",
+                        "Handlers-cleaners"
+                    ],
+                    "generalized": "Nontechnical"
+                }
+            ]
+        },
+        {
+            "is_suppressed": true
+        }
+    ]
+}

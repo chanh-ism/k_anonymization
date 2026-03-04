@@ -1,0 +1,11 @@
+{
+  "name": "sex",
+  "lambda": [
+    "lambda x: '*'"
+  ],
+  "tree": [
+      {
+          "is_suppressed": true
+      }
+  ] 
+}

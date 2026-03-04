@@ -1,0 +1,34 @@
+{
+  "name": "marital-status",
+  "lambda": [
+    "lambda x: 'spouse present' if x in ['Married-civ-spouse', 'Married-AF-spouse'] else 'spouse not present'",
+    "lambda x: '*'"
+  ],
+  "tree": [
+        {
+            "is_suppressed": false,
+            "values": [
+                {
+                    "original": [
+                        "Married-civ-spouse",
+                        "Married-AF-spouse"
+                    ],
+                    "generalized": "spouse present"
+                },
+                {
+                    "original": [
+                        "Divorced",
+                        "Never-married",
+                        "Separated",
+                        "Widowed",
+                        "Married-spouse-absent"
+                    ],
+                    "generalized": "spouse not present"
+                }
+            ]
+        },
+        {
+            "is_suppressed": true
+        }
+  ]
+}

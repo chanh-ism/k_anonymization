@@ -1,0 +1,11 @@
+{
+  "name": "race",
+  "lambda": [
+    "lambda x: '*'"
+  ],
+  "tree": [
+      {
+          "is_suppressed": true
+      }
+  ]
+}

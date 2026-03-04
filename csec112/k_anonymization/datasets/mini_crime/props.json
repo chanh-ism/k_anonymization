@@ -1,0 +1,6 @@
+{
+    "qi_index": [1,2,3],
+    "target": "crime",
+    "is_category": [true, false, false],
+    "max_numeric": {}
+}

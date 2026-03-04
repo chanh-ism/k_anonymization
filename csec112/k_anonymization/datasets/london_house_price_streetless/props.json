@@ -1,0 +1,6 @@
+{
+    "qi_index": [0,1,2,3],
+    "target": "price_class",
+    "is_category": [true, true, true, true],
+    "max_numeric": {"age": 50.5}
+}

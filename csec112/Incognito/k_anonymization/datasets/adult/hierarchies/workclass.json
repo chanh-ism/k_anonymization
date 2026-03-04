@@ -1,0 +1,36 @@
+{
+    "name": "workclass",
+    "tree": [
+        {
+            "is_suppressed": false,
+            "values": [
+                {
+                    "original": [
+                        "Private",
+                        "Self-emp-not-inc",
+                        "Self-emp-inc"
+                    ],
+                    "generalized": "Non-Government"
+                },
+                {
+                    "original": [
+                        "Federal-gov",
+                        "Local-gov",
+                        "State-gov"
+                    ],
+                    "generalized": "Government"
+                },
+                {
+                    "original": [
+                        "Without-pay",
+                        "Never-worked"
+                    ],
+                    "generalized": "Unemployed"
+                }
+            ]
+        },
+        {
+            "is_suppressed": true
+        }
+    ]
+}
