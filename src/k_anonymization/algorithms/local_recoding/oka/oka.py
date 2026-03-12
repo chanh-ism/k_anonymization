@@ -1,4 +1,3 @@
-# +
 import random
 from functools import partial
 
@@ -8,27 +7,28 @@ from tqdm.auto import tqdm
 from k_anonymization.core.dataset import Dataset
 from k_anonymization.utils.parallel import Parallel
 
-from .oka_utils import _oka_get_distance_parallel, _oka_init_cluster
-from .type import ClusterAnonMethod, ClusteringBasedAlgorithm
-from .utils import get_information_loss, get_max_ranges
+from .._utils import get_information_loss
+from ..local_recoding_algorithm import (
+    GroupAnonymization,
+    GroupAnonymizationBuiltIn,
+    LocalRecodingAlgorithm,
+)
+from ._utils import oka_get_distance_parallel, oka_init_cluster
 
 try:
-    __IPYTHON__
+    __IPYTHON__  # type: ignore # noqa: F821
     _bar_format = None
 except:
     _bar_format = "{l_bar}{bar:20}|{n_fmt}/{total_fmt} [{elapsed}]"
 
 
-# -
-
-
-class OKA(ClusteringBasedAlgorithm):
+class OKA(LocalRecodingAlgorithm):
 
     def __init__(
         self,
         dataset: Dataset,
         k: int,
-        cluster_anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
+        cluster_anon_method: GroupAnonymization = GroupAnonymizationBuiltIn.SUMMARIZATION,
         seed: int = None,
         parallel: bool = False,
         cpu_cores: int = Parallel.max_cores - 1,
@@ -38,9 +38,9 @@ class OKA(ClusteringBasedAlgorithm):
         self.cpu_cores = cpu_cores
         self.is_parallel = parallel
         self.__parallel = Parallel(cpu_cores)
-        self.__get_distance_parallel = partial(_oka_get_distance_parallel)
+        self.__get_distance_parallel = partial(oka_get_distance_parallel)
         self.__init_cluster = partial(
-            _oka_init_cluster,
+            oka_init_cluster,
             qids_idx=self.qids_idx,
             is_categorical=self.is_categorical,
             max_ranges=self.max_ranges,
@@ -75,7 +75,7 @@ class OKA(ClusteringBasedAlgorithm):
         _adjusting_records = [__get_adjusting_records(c, self.k) for c in clusters]
         return sum(_adjusting_records, [])
 
-    def do_clustering(self):
+    def do_local_recoding(self):
         random.seed(self.seed)
         self.rand_idx = random.sample(
             range(0, self.anon_data.shape[0]),

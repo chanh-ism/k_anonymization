@@ -1,5 +1,5 @@
-from ..utils import generalize_column
-from .utils import get_distance
+from ...utils import generalize_column
+from .._utils import get_distance
 
 
 class OKA_Cluster(object):
@@ -22,13 +22,7 @@ class OKA_Cluster(object):
         self.member.append(record)
         self.__update_centroid()
 
-    def remove(self, idx: int = 0):
-        assert len(self.member) > 0
-        self.member.pop(idx)
-        self.__update_centroid()
-
     def remove(self, from_to: list):
-
         results = self.member[from_to[0] : from_to[1]]
         self.member = self.member[: from_to[0]] + self.member[from_to[1] :]
 
@@ -67,7 +61,7 @@ class OKA_Cluster(object):
             for idx, col in enumerate(zip(*self.member)):
                 if idx not in self.qids_idx:
                     centroid.append(-1)
-                elif self.is_categorical[self.qids_idx.index(idx)] == True:
+                elif self.is_categorical[self.qids_idx.index(idx)] is True:
                     level = 0
                     values = col[:]
                     while len(set(values)) > 1:
@@ -85,7 +79,7 @@ class OKA_Cluster(object):
         return len(self.member)
 
 
-def _oka_init_cluster(
+def oka_init_cluster(
     data,
     qids_idx,
     is_categorical,
@@ -101,7 +95,5 @@ def _oka_init_cluster(
     )
 
 
-def _oka_get_distance_parallel(cluster, record):
+def oka_get_distance_parallel(cluster, record):
     return cluster.distance(record)
-
-

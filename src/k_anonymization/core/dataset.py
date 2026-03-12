@@ -13,11 +13,11 @@ from .hierarchy import HierarchiesDict
 
 class Dataset:
     """
-    A management class for handling datasets, metadata, and hierarchies.
+    Management class for handling dataset and its properties.
 
-    This class serves as a central hub for a specific dataset, orchestrating
+    This class serves as a central hub for a dataset, orchestrating
     the loading of raw data, attribute properties, and generalization
-    hierarchies for privacy-preserving operations.
+    hierarchies.
 
     Parameters
     ----------
@@ -32,6 +32,8 @@ class Dataset:
     name : str
         The name assigned to the dataset instance.
     """
+
+    # TODO: implement classes for QIDs
 
     all_datasets = []
 

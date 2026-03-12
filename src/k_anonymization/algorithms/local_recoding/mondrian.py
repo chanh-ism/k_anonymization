@@ -1,22 +1,21 @@
-# +
 from numpy import median, ndarray
 from pandas import factorize, unique
 
-from k_anonymization.algorithms.clustering_based.type import (
-    ClusterAnonMethod,
-    ClusteringBasedAlgorithm,
-)
 from k_anonymization.core.dataset import Dataset
 
-# -
+from .local_recoding_algorithm import (
+    GroupAnonymization,
+    GroupAnonymizationBuiltIn,
+    LocalRecodingAlgorithm,
+)
 
 
-class ClassicMondrian(ClusteringBasedAlgorithm):
+class ClassicMondrian(LocalRecodingAlgorithm):
     def __init__(
         self,
         dataset: Dataset,
         k: int,
-        cluster_anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
+        cluster_anon_method: GroupAnonymization = GroupAnonymizationBuiltIn.SUMMARIZATION,
     ):
         super().__init__(dataset, k, cluster_anon_method)
         self.__ranges = {}
@@ -88,7 +87,7 @@ class ClassicMondrian(ClusteringBasedAlgorithm):
         self.__restore_cat_qids_idx(slice_data)
         return [slice_data.tolist()]
 
-    def do_clustering(self):
+    def do_local_recoding(self):
         np_data = self.anon_data.values
         for pos, idx in enumerate(self.qids_idx):
             if self.is_categorical[pos]:

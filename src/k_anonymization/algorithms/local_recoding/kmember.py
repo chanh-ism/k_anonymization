@@ -1,4 +1,3 @@
-# +
 import random
 from functools import partial
 
@@ -8,25 +7,26 @@ from tqdm.auto import tqdm
 from k_anonymization.core.dataset import Dataset
 from k_anonymization.utils.parallel import Parallel
 
-from .type import ClusterAnonMethod, ClusteringBasedAlgorithm
-from .utils import get_distance, get_information_loss, get_max_ranges
+from ._utils import get_distance, get_information_loss
+from .local_recoding_algorithm import (
+    GroupAnonymization,
+    GroupAnonymizationBuiltIn,
+    LocalRecodingAlgorithm,
+)
 
 try:
-    __IPYTHON__
+    __IPYTHON__  # type: ignore # noqa: F821
     _bar_format = None
 except:
     _bar_format = "{l_bar}{bar:20}|{n_fmt}/{total_fmt} [{elapsed}]"
 
 
-# -
-
-
-class KMember(ClusteringBasedAlgorithm):
+class KMember(LocalRecodingAlgorithm):
     def __init__(
         self,
         dataset: Dataset,
         k: int,
-        cluster_anon_method: ClusterAnonMethod = ClusterAnonMethod.SUMMARIZATION,
+        cluster_anon_method: GroupAnonymization = GroupAnonymizationBuiltIn.SUMMARIZATION,
         seed: int = None,
         parallel: bool = False,
         cpu_cores: int = Parallel.max_cores - 1,
@@ -82,7 +82,7 @@ class KMember(ClusteringBasedAlgorithm):
         best_idx = argmin(information_losses).item()
         return (best_idx, information_losses[best_idx])
 
-    def do_clustering(self):
+    def do_local_recoding(self):
         data = self.anon_data.values.tolist()
 
         clusters = []

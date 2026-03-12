@@ -7,15 +7,15 @@ class ITableDF(DataFrame):
     """
     A custom `pandas.DataFrame` class that integrates UI from `itables`.
 
-    This class inherits from `pandas.DataFrame` and overrides its HTML representation
-    to `itables`'s.
+    This class inherits from `pandas.DataFrame` and overrides its
+    HTML representation to `itables`'s.
 
     Parameters
     ----------
     *args : tuple
-        Positional arguments passed to the parent `pandas.DataFrame` constructor.
+        Positional arguments for the parent `pandas.DataFrame`.
     **kwargs : dict
-        Keyword arguments passed to the parent `pandas.DataFrame` constructor.
+        Keyword arguments for the parent `pandas.DataFrame`.
         Can optionally include a `table_name` key (str).
 
     Attributes
@@ -51,7 +51,8 @@ class ITableDF(DataFrame):
         """
         Display the entirety of the table.
 
-        Calls the external `show` function with `max_bytes=0` to ensure that
-        display truncation or byte-size limits are bypassed.
+        Calls the external `show` function with `max_bytes=0` to ensure
+        that display truncation or byte-size limits are bypassed.
+        Note that this may cause a performance issue if data is large.
         """
         show(self, self.table_name, max_bytes=0)

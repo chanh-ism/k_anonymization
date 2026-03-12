@@ -2,8 +2,7 @@
 from enum import Enum
 
 from numpy import average, ndarray
-from pandas import concat, get_dummies
-from pandas.core.frame import DataFrame
+from pandas import DataFrame, concat
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -23,7 +22,7 @@ from xgboost.sklearn import XGBClassifier
 
 from k_anonymization.core.dataset import Dataset
 
-from ..algorithms.type import Algorithm
+from ..core.algorithm import Algorithm
 from .utils import get_equivalence_qids
 
 # -

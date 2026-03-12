@@ -1,14 +1,9 @@
-# +
 from numpy import argmax, unique
-from pandas import DataFrame
 
-from k_anonymization.core.dataset import Dataset
+from k_anonymization.core import Algorithm, Dataset
 from k_anonymization.evaluation.utils import find_not_k_anonymized_qids, is_k_anonymized
 
-from ..type import Algorithm
 from ..utils import generalize
-
-# -
 
 
 class Datafly(Algorithm):

@@ -7,7 +7,7 @@ from ipywidgets import Dropdown, Image, Label, Layout, Stack, VBox, jslink
 
 class Hierarchy(dict):
     """
-    A dictionary subclass representing a generalization hierarchy.
+    Attribute's generalization hierarchy.
 
     This class stores hierarchical structures used for data generalization,
     supporting both explicit tree definitions and functional lambda-based
@@ -17,7 +17,7 @@ class Hierarchy(dict):
     Parameters
     ----------
     first_row : any
-        The original data value of the first row, which is used for visualizing
+        The original data value of the first row used for visualizing
         generalization tree (for lambda-based available hierarchy).
     *args : tuple
         Positional arguments passed to the parent `dict` constructor.
@@ -105,7 +105,7 @@ class Hierarchy(dict):
                     [
                         [
                             f'({index + 1})\n{values["generalized"]}',
-                            f'{f"({index})\n" if index != 0 else ''}{v}',
+                            f'{f"({index})\n" if index != 0 else ""}{v}',
                         ]
                         for v in values["original"]
                     ]
@@ -151,11 +151,11 @@ class Hierarchy(dict):
 
 class HierarchiesDict(dict):
     """
-    A dictionary-like manager for multiple attribute generalization hierarchies.
+    Dictionary-like manager for attributes' generalization hierarchies.
 
-    This class maps dataset column indices or attribute names to their respective
-    hierarchy definitions. It supports lazy loading of hierarchy configurations
-    from JSON files stored in a specific directory.
+    This class maps dataset column indices or attribute names to their
+    respective hierarchy definitions. Hierarchy configurations are
+    lazy-loaded of from JSON files stored in the dataset's directory.
 
     Parameters
     ----------

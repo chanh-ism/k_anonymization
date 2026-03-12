@@ -1,10 +1,7 @@
-# +
 import numpy as np
 
-from k_anonymization.algorithms.type import Algorithm
+from k_anonymization.core.algorithm import Algorithm
 from k_anonymization.core.dataset import Dataset
-
-# -
 
 
 class Perturbation(Algorithm):

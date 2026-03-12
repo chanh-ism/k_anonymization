@@ -55,7 +55,7 @@ def generalize_column_tree(values: list, hierarchy: dict, level: int):
 
     is_suppressed = hierarchy["tree"][level]["is_suppressed"]
     if is_suppressed:
-        f = lambda x: "*"
+        return list(map(lambda x: "*", values))
     else:
         generalized_values = hierarchy["tree"][level]["values"]
 
@@ -65,8 +65,7 @@ def generalize_column_tree(values: list, hierarchy: dict, level: int):
                     return generalized_value["generalized"]
             return x
 
-        f = lambda x: find_generalized_value(x)
-    return list(map(f, values))
+        return list(map(find_generalized_value, values))
 
 
 def generalize_column_lambda(values: list, hierarchy: dict, level: int):

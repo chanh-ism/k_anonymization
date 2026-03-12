@@ -7,14 +7,23 @@ name = "k_anonymization"
 authors = [{ name = "SDC4Society", email = "sdc4society@grp.ism.ac.jp" }]
 description = "My package description"
 # readme = "README.rst"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 # keywords = ["one", "two"]
 # license = "BSD-3-Clause"
 # classifiers = [
 #     "Framework :: Django",
 #     "Programming Language :: Python :: 3",
 # ]
-dependencies = ["pandas", "numpy"]
+dependencies = [
+    "pandas",
+    "numpy",
+    "tqdm",
+    "scikit-learn",
+    "xgboost",
+    "itables==2.5.2",
+    "ipywidgets",
+    "graphviz",
+]
 dynamic = ["version"]
 
 # [project.optional-dependencies]

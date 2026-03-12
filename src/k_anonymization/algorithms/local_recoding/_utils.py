@@ -1,9 +1,6 @@
-# +
 from k_anonymization.core.dataset import Dataset
 
 from ..utils import generalize_column_tree
-
-# -
 
 
 def get_max_ranges(dataset: Dataset):
@@ -16,7 +13,7 @@ def get_max_ranges(dataset: Dataset):
     max_ranges = []
     for pos, idx in enumerate(qids_idx):
         max_ranges.extend([None] * (idx - len(max_ranges)))
-        if is_cat[pos] == True:
+        if is_cat[pos]:
             max_ranges.append(
                 len(hierarchies[idx]["lambda"])
                 if "lambda" in list(hierarchies[idx])
@@ -34,7 +31,7 @@ def get_distance(r, record, qids_idx, is_cat, max_ranges, hierarchies):
     distances = []
 
     for pos, idx in enumerate(qids_idx):
-        if is_cat[pos] == True:
+        if is_cat[pos]:
             distances.append(
                 get_categorical_distance(
                     [r[idx], record[idx]],
@@ -50,7 +47,7 @@ def get_distance(r, record, qids_idx, is_cat, max_ranges, hierarchies):
 
 def get_information_loss(record, cluster, qids_idx, is_cat, max_ranges, hierarchies):
     information_losses = []
-    if record == None:
+    if record is None:
         size = len(cluster)
         columns = list(zip(*cluster))
     else:
@@ -58,7 +55,7 @@ def get_information_loss(record, cluster, qids_idx, is_cat, max_ranges, hierarch
         columns = list(zip(*(cluster + [record])))
 
     for pos, idx in enumerate(qids_idx):
-        if is_cat[pos] == True:
+        if is_cat[pos]:
             information_losses.append(
                 get_categorical_distance(
                     columns[idx], hierarchies[idx], max_ranges[idx]
@@ -83,27 +80,3 @@ def get_categorical_distance(values, hierarchy, height):
         level += 1
 
     return level / height
-
-
-def summarize(values, is_cat):
-    anon_value = None
-    if is_cat == True:
-        try:
-            anon_value = " & ".join(set(values))
-        except:
-            anon_value = " & ".join([str(x) for x in set(values)])
-    else:
-        if len(set(values)) == 1:
-            anon_value = f"{values[0]}"
-        else:
-            anon_value = f"{min(values)} ~ {max(values)}"
-    return list(map(lambda x: anon_value, values))
-
-
-def get_mean_mode(values, is_cat):
-    anon_value = None
-    if is_cat == True:
-        anon_value = max(values, key=values.count)
-    else:
-        anon_value = sum(values) / len(values)
-    return list(map(lambda x: anon_value, values))

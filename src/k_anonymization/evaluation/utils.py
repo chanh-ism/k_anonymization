@@ -1,5 +1,5 @@
 from numpy import ndarray, unique
-from pandas.core.frame import DataFrame
+from pandas import DataFrame
 
 
 def find_not_k_anonymized_qids(
@@ -9,7 +9,7 @@ def find_not_k_anonymized_qids(
 
 
 def get_equivalence_qids(data: DataFrame | ndarray, qids_idx: list = []):
-    return get_more_than_k_equivalence_qids(data, float('inf'), qids_idx)
+    return get_more_than_k_equivalence_qids(data, float("inf"), qids_idx)
 
 
 def get_more_than_k_equivalence_qids(data: DataFrame | ndarray, k, qids_idx: list = []):
