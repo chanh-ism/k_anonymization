@@ -20,7 +20,7 @@ class Algorithm(ABC):
         The privacy parameter 'k'.
     dataset : Dataset
         The Dataset object holding the original data and its metadata.
-    org_data : ItableDF
+    org_data : ITableDF
         The original data extracted from `dataset`.
     anon_data : ITableDF or None
         The anonymized data.

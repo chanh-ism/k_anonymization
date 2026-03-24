@@ -173,7 +173,7 @@ class LocalRecodingAlgorithm(Algorithm):
 
     Attributes
     ----------
-    [...attributes inherited from `Algorithm`]
+    [...] : attributes inherited from ``Algorithm``
 
     group_anonymization : GroupAnonymization
         The group anonymization method.
@@ -206,9 +206,9 @@ class LocalRecodingAlgorithm(Algorithm):
             The method to anonymize the resulting groups after applying
             local recoding.
             It is possible to use an example method in
-            `GroupAnonymizationBuiltIn`, or create a custom method
-            `custom_group_anonymization(group: list, props: Any) -> list`.
-            Default: `GroupAnonymizationBuiltIn.SUMMARIZATION`
+            ``GroupAnonymizationBuiltIn``, or create a custom method
+            ``custom_group_anonymization(group: list, props: Any) -> list``.
+            Default: ``GroupAnonymizationBuiltIn.SUMMARIZATION``
         """
         self.group_anonymization = group_anonymization
         self.qids_idx = dataset.qids_idx
@@ -222,10 +222,15 @@ class LocalRecodingAlgorithm(Algorithm):
         Execute the local recoding anonymization workflow.
 
         The process follows these steps:
+
         1. Inject temporary IDs to track original row ordering.
+
         2. Split data into groups using `do_local_recoding`.
+
         3. Apply the group anonymization strategy to each group.
+
         4. Reconstruct the dataset and restore original row order.
+
         5. Clean up temporary IDs.
         """
         self.anon_data["__ID"] = arange(self.anon_data.shape[0])
