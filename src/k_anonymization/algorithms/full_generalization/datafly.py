@@ -7,6 +7,37 @@ from ..utils import generalize
 
 
 class Datafly(Algorithm):
+    """
+    Implementation of Datafly algorithm.
+
+    Datafly applies an iterative heuristic to generalize attributes with
+    the highest cardinality (number of unique values) until the dataset
+    satisfies `k`-anonymity.
+
+    If an optional suppression threshold is set, Datafly generalizes the
+    dataset until (entire dataset - suppression threshold) satisfies
+    `k`-anonymity.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        The Dataset object holding the original data and its metadata.
+    k : int
+        The privacy parameter `k`.
+    suppression_threshold : int, default 0
+         The number of allowed suppressed records.
+
+        The maximum number of records that can be removed (suppressed)
+        from the dataset to satisfy `k`-anonymity.
+
+    Attributes
+    ----------
+    suppression_threshold : int
+        The number of allowed suppressed records.
+    hierarchies_tracking : dict
+        A mapping of attribute names to their current generalization
+        level in the hierarchy.
+    """
 
     def __init__(
         self,
@@ -14,17 +45,58 @@ class Datafly(Algorithm):
         k: int,
         suppression_threshold: int = 0,
     ):
+        """
+        Initialize the Datafly algorithm.
+
+        Parameters
+        ----------
+        dataset : Dataset
+            The Dataset object holding the original data and its metadata.
+        k : int
+            The privacy parameter `k`.
+        suppression_threshold : int, optional
+            The number of allowed suppressed records.
+        """
         self.suppression_threshold = suppression_threshold
         super().__init__(dataset, k)
 
     def pick_attribute(self, np_data, qids_idx, qids):
-        # pick_attribute_with_highest_cardinality
+        """
+        Pick the attribute with the highest cardinality.
+
+        This heuristic is used to decide which attribute to generalize next,
+        aiming to reduce the uniqueness of records as quickly as possible.
+
+        Parameters
+        ----------
+        np_data : numpy.ndarray
+            The current state of the data in a NumPy array format.
+        qids_idx : list
+            The column indices of the Quasi-Identifiers.
+        qids : list
+            The names of the Quasi-Identifiers.
+
+        Returns
+        -------
+        int
+            The column index of the attribute with the highest cardinality.
+        str
+            The name of the attribute with the highest cardinality.
+        """
         _np_data = np_data.T
         cardinalities = [len(unique(_np_data[idx])) for idx in qids_idx]
         max_cardinality = argmax(cardinalities)
         return qids_idx[max_cardinality], qids[max_cardinality]
 
     def anonymize(self):
+        """
+        Run the Datafly algorithm.
+
+        Iteratively generalizes the attribute with the highest cardinality.
+        If the data state does not satisfy `k`-anonymity but the number of
+        outlying records is below the `suppression_threshold`,
+        those records are removed to finalize anonymization.
+        """
         qids = self.dataset.qids
         qids_idx = self.dataset.qids_idx
         np_anon_data = self.anon_data.values

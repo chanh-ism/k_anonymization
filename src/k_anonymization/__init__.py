@@ -1,3 +1,7 @@
+"""
+Implementation of `k`-anonymization algorithms and evaluation metrics.
+"""
+
 from pandas import set_option as pd_set_option
 
 from . import algorithms, core, utils

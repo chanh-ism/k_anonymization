@@ -5,12 +5,42 @@ from k_anonymization.core.dataset import Dataset
 
 
 class Perturbation(Algorithm):
+    """
+    Implementation of Perturbation algorithm.
+
+    Perturbation uses a Differential Privacy-inspired technique that adds
+    controlled noise into the dataset. It uses "Retention-Replacement" for
+    categorical attributes and "Laplacian Noise" for numerical attributes.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        The Dataset object holding the original data and its metadata.
+    k : int
+        The privacy parameter `k`.
+    seed : int, optional
+        Random seed for reproducibility.
+    """
+
     def __init__(
         self,
         dataset: Dataset,
         k: int,
         seed: int = None,
     ):
+        """
+        Initialize the Perturbation algorithm.
+
+        Parameters
+        ----------
+        dataset : Dataset
+            The Dataset object holding the original data and its metadata.
+        k : int
+            The privacy parameter `k`.
+        seed : int, optional
+            Random seed for reproducibility.
+        """
+
         super().__init__(dataset, k)
 
         self.seed = seed
@@ -30,6 +60,25 @@ class Perturbation(Algorithm):
                 }
 
     def solve_p_given_k(self, acceptance_error=1e-6):
+        """
+        Solve for the retention parameter `p` using the bisection method.
+
+        In the Retention-Replacement model, `k` is a function of `p`.
+        Because `k` decreases monotonically as `p` increases in the
+        range `[0, 1]`, this method iteratively narrows down the `p`
+        required to reach the target `k`.
+
+        Parameters
+        ----------
+        acceptance_error : float, default 1e-6
+            The tolerance level for the difference between the
+            calculated `k` and the target `k`.
+
+        Returns
+        -------
+        float
+            The optimal parameter `p` for categorical perturbation.
+        """
         # Get parameter p for Retention-Replacement (for categorical qids)
         # Knowing that k monotonically decreases on p in [0,1]
         # Solve p given k using bi-section method:
@@ -57,6 +106,19 @@ class Perturbation(Algorithm):
         return p
 
     def do_retention_replacement(self):
+        r"""
+        Apply Retention-Replacement perturbation to categorical attributes.
+
+        For each value, there is a probability that the original value is
+        retained (:math:`p + \frac{1-p}{size}`) and a probability that it
+        is replaced by another value from the domain (:math:`\frac{1-p}{size}`).
+
+        Notes
+        -----
+        A temporary suffix `#ReRe#` is used during processing to distinguish
+        between original and perturbed values to prevent recursive
+        perturbation within the same column loop.
+        """
         # Retention-Replacement
         # Perturb the categorical value based on weighted randomization:
         # The orignal value has (p + (1 - p)/attr_size) chance to remain unchanged,
@@ -91,6 +153,18 @@ class Perturbation(Algorithm):
         )
 
     def solve_b_given_k(self):
+        """
+        Calculate the scale parameter `b` for Laplacian noise.
+
+        This parameter determines the 'width' of the noise distribution
+        needed to obscure numerical values sufficiently to reach the
+        target privacy level.
+
+        Returns
+        -------
+        float
+            The scale parameter `b` (sigma) for the Laplace distribution.
+        """
         # Get parameter b (or sigma) for Laplacian Noise (for numerical qids)
         size_data = self.org_data.shape[0]
         return (2.0 * len(self.num_qids)) / np.log(
@@ -98,6 +172,13 @@ class Perturbation(Algorithm):
         ).item()
 
     def do_laplacian_noise(self):
+        """
+        Apply Laplacian noise to numerical attributes.
+
+        Adds random noise sampled from a Laplace distribution centered
+        at zero. The resulting values are truncated to ensure they stay
+        within the original attribute's min/max range.
+        """
         # Laplacian Noise
         # - Calculate b (or sigma)
         # - Apply noise
@@ -127,6 +208,12 @@ class Perturbation(Algorithm):
             )
 
     def anonymize(self):
+        """
+        Run the Perturbation algorithm.
+
+        Applies categorical perturbation followed by numerical perturbation,
+        then reconstructs the finalized anonymized data object.
+        """
         self.do_retention_replacement()
         self.do_laplacian_noise()
         self._construct_anon_data(self.anon_data, columns=list(self.anon_data))

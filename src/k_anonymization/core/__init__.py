@@ -1,3 +1,7 @@
+"""
+Core (Abstract) classes.
+"""
+
 from .algorithm import Algorithm
 from .dataset import Dataset, SampleDataset
 from .frame import ITableDF

@@ -12,16 +12,16 @@ class Algorithm(ABC):
     dataset : Dataset
         The Dataset object holding the original data and its metadata.
     k : int
-        The privacy parameter 'k'.
+        The privacy parameter `k`.
 
     Attributes
     ----------
     k : int
-        The privacy parameter 'k'.
+        The privacy parameter `k`.
     dataset : Dataset
         The Dataset object holding the original data and its metadata.
     org_data : ITableDF
-        The original data extracted from `dataset`.
+        The original data extracted from ``dataset``.
     anon_data : ITableDF or None
         The anonymized data.
     suppressed_qids : list
@@ -41,7 +41,7 @@ class Algorithm(ABC):
         dataset : Dataset
             The Dataset object holding the original data and its metadata.
         k : int
-            The privacy parameter 'k'.
+            The privacy parameter `k`.
         """
         self.k = k
         self.dataset = dataset
@@ -54,7 +54,7 @@ class Algorithm(ABC):
 
     def __getattribute__(self, name):
         """
-        Clears previous anonymization results when calling `anonymize`.
+        Clears previous anonymization results when calling ``anonymize``.
         """
         if name == "anonymize":
             self.anon_data = self.org_data[:]
@@ -66,7 +66,7 @@ class Algorithm(ABC):
         """
         The core anonymization logic to be implemented by subclasses.
 
-        This method should transform `self.anon_data` such that
+        This method should transform ``self.anon_data`` such that
         it satisfies the k-anonymity requirement.
         """
         pass
@@ -75,7 +75,7 @@ class Algorithm(ABC):
         """
         Helper method to finalize and wrap the anonymized data.
 
-        Converts anonymized data into an `ITableDF` object for
+        Converts anonymized data into an ``ITableDF`` object for
         standardized display and further analysis.
 
         Parameters

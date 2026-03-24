@@ -1,3 +1,7 @@
+"""
+Utility modules or classes.
+"""
+
 from . import data_table
 from .parallel import Parallel
 from .widgets import AutoSortedTagsInput
