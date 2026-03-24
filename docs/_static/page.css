@@ -1,0 +1,95 @@
+.bd-sidebar-primary .sidebar-primary-items__end {
+  margin-top: unset !important;
+}
+
+.bd-sidebar-secondary {
+  width: unset !important;
+  max-width: 300px;
+  overflow-x: hidden;
+}
+.bd-sidebar-secondary .sidebar-secondary-items {
+  display: block !important;
+}
+nav.page-toc ul.nav {
+  display: block !important;
+}
+.bd-sidebar-secondary .sidebar-secondary-items .toc-entry a > code {
+  display: block;
+  max-width: max-content;
+  overflow-x: hidden;
+  color: var(--pst-color-inline-code);
+  border: none;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.bd-sidebar-secondary .sidebar-secondary-items .toc-entry a > code > span.pre {
+  white-space: normal !important;
+}
+a.reference.internal:hover > code,
+a.reference.internal:focus > code,
+a.reference.internal:hover > em,
+a.reference.internal:focus > em,
+p.prev-next-title:hover > code,
+p.prev-next-title:focus > code {
+  color: var(--pst-color-link-hover) !important;
+}
+a.reference.internal:hover,
+a.reference.internal:focus {
+  text-decoration-color: var(--pst-color-link-hover);
+}
+a.reference.internal:has(code.docutils) {
+  text-decoration-line: none;
+}
+a.reference.internal:has(code.docutils):hover,
+a.reference.internal:has(code.docutils):focus {
+  text-decoration-line: underline;
+}
+
+dl[class]:not(.option-list, .field-list, .footnote, .glossary, .simple) dd {
+  margin-left: 1.5rem !important;
+  margin-right: 1.5rem;
+}
+section > dl,
+section > dl > dd > dl.py {
+  border: 1px solid #eee;
+  box-shadow: 0 0.25rem 0.75rem -0.25rem #ccc;
+  border-radius: 0.5rem;
+}
+section > dl > dd > dl.py {
+  margin-bottom: 1rem !important;
+  padding-bottom: 0.5rem;
+}
+section > dl dt.py {
+  background: var(--pst-color-attention-bg);
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.5rem;
+}
+
+.max-width-img {
+  overflow-x: auto;
+}
+.max-width-img img {
+  max-width: unset;
+}
+
+/* Newlines (\a) and spaces (\20) before each parameter */
+dt.py > em.sig-param::before {
+  content: "\a\20\20\20\20";
+  white-space: pre;
+}
+/* Newline after the last parameter (so the closing bracket is on a new line) */
+dt.py > em.sig-param:last-of-type::after {
+  content: "\a";
+  white-space: pre;
+}
+
+dt.py em.sig-param span.n:first-of-type {
+  font-style: normal;
+}
+dt.py em.sig-param span.n:not(:first-of-type),
+dt.py em.sig-param span.n a,
+dl.py a.internal,
+dl.field-list em {
+  font-style: italic !important;
+  color: var(--pst-color-inline-code-links) !important;
+}
