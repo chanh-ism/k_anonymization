@@ -6,6 +6,7 @@ from .algorithm import Algorithm
 from .dataset import Dataset, SampleDataset
 from .frame import ITableDF
 from .hierarchy import HierarchiesDict, Hierarchy
+from .parallel import Parallel
 
 __all__ = [
     "Algorithm",
@@ -14,4 +15,5 @@ __all__ = [
     "ITableDF",
     "HierarchiesDict",
     "Hierarchy",
+    "Parallel",
 ]

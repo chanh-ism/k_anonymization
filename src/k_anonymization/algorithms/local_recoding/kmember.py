@@ -4,8 +4,7 @@ from functools import partial
 from numpy import argmax, argmin
 from tqdm.auto import tqdm
 
-from k_anonymization.core.dataset import Dataset
-from k_anonymization.utils.parallel import Parallel
+from k_anonymization.core import Dataset, Parallel
 
 from ._utils import get_distance, get_information_loss
 from .local_recoding_algorithm import (
