@@ -1,5 +1,5 @@
-k_anonymization
-===============
+:code:`k_anonymization`
+=======================
 
 .. currentmodule:: k_anonymization
 

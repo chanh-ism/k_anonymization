@@ -1,3 +1,13 @@
+.bd-sidebar-primary {
+  height: 100%;
+  width: fit-content;
+  max-width: 50vw;
+  flex-basis: unset !important;
+}
+.navbar-brand img {
+  max-width: 250px;
+  width: auto;
+}
 .bd-sidebar-primary .sidebar-primary-items__end {
   margin-top: unset !important;
 }
@@ -108,4 +118,65 @@ dl.field-list em {
 
 div.math mjx-container {
   overflow-y: hidden;
+}
+
+div.citation > p {
+  margin-left: 2.25rem !important;
+}
+div.citation a[role="doc-backlink"] {
+  text-decoration: none !important;
+  color: var(--pst-color-text-base) !important;
+}
+
+div.toctree-wrapper a {
+  color: var(--pst-color-text-base) !important;
+}
+div.toctree-wrapper a:hover,
+div.toctree-wrapper a:focus {
+  color: var(--pst-color-link-hover) !important;
+}
+
+/* Add dotted lines before each toc entry
+
+.toctree-wrapper li[class^="toctree-l"] > ul {
+  padding-inline-start: 0;
+}
+.toctree-wrapper li[class^="toctree-l"] a {
+  position: relative;
+}
+.toctree-wrapper li[class^="toctree-l"] a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0.25rem;
+  border-bottom: 0.125rem dotted black;
+}
+.toctree-wrapper li.toctree-l2 a {
+  padding-left: 1.5em;
+}
+.toctree-wrapper li.toctree-l2 a::before {
+  width: 1.25em;
+}
+.toctree-wrapper li.toctree-l3 a {
+  padding-left: 3em;
+}
+.toctree-wrapper li.toctree-l3 a::before {
+  width: 2.75em;
+}
+.toctree-wrapper li.toctree-l4 a {
+  padding-left: 4.5em;
+}
+.toctree-wrapper li.toctree-l4 a::before {
+  width: 4.25em;
+} */
+
+.prev-next-area a p.prev-next-title:has(code.docutils) {
+  color: var(--pst-color-inline-code);
+}
+.prev-next-area a:hover code.docutils,
+.prev-next-area a:focus code.docutils {
+  color: var(--pst-color-link-hover);
+}
+.prev-next-area a p.prev-next-title {
+  color: var(--pst-color-text-base);
 }

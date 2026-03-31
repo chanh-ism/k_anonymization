@@ -1,4 +1,4 @@
-{{ ("``" ~ (objname | escape) ~ "``") | underline('=')}}
+{{ (":code:`" ~ (objname | escape) ~ "`") | underline('=')}}
 
 .. currentmodule:: {{ module }}
 

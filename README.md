@@ -1,6 +1,6 @@
 # Python (re)implementation of several *k*-anonymization algorithms.
 
-Currently, the module is under active development by the researchers of the [SDC4Society project](https://www.sdc4society.org/). for research and fact-checking purposes.
+Currently, the module is under active development by the researchers of the [SDC4Society project](https://www.sdc4society.org/) for research and fact-checking purposes.
 
 The following algorithms have been implemented and tested:
 
@@ -25,6 +25,6 @@ pip install -e .
 
 [4] Lin, Jun-Lin, and Meng-Cheng Wei. "An efficient clustering method for k-anonymization." Proceedings of the 2008 international workshop on Privacy and anonymity in information society. ACM, 2008. https://doi.org/10.1145/1379287.1379297.
 
-[5] I. Dai, C. Koji, and T. Katsumi. "k-匿名性の確率的指標への拡張とその適用例." In コンピュータセキュリティシンポジウム2009 (CSS2009) 論文集, vol. 2009, pp. 1–6. 情報処理学会, 2011.
+[5] I. Dai, C. Koji, and T. Katsumi. "k-匿名性の確率的指標への拡張とその適用例." In コンピュータセキュリティシンポジウム2009 (CSS2009) 論文集, vol. 2009, pp. 1–6. 情報処理学会, 2011. https://ipsj.ixsq.nii.ac.jp/records/74904.
 
-[6] I. Dai, C. Koji, and T. Katsumi. “数値属性における, k-匿名性を満たすランダム化手法.” In コンピュータセキュリティシンポジウム2011 論文集,vol. 2011, pp. 450–455. 情報処理学会, 2011.
+[6] I. Dai, C. Koji, and T. Katsumi. “数値属性における, k-匿名性を満たすランダム化手法.” In コンピュータセキュリティシンポジウム2011 (CSS2011) 論文集,vol. 2011, pp. 450–455. 情報処理学会, 2011. https://ipsj.ixsq.nii.ac.jp/records/77972.
