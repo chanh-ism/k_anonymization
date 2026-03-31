@@ -1,3 +1,7 @@
+"""
+`k`-anonymity privacy metric.
+"""
+
 from numpy import ndarray
 from pandas import DataFrame
 

@@ -1,7 +1,11 @@
+"""
+Data utility metrics.
+"""
+
 from numpy import ndarray
 from pandas import DataFrame
 
-from k_anonymization.core import HierarchiesDict
+from k_anonymization.core import HierarchiesDict, Hierarchy
 
 from .anonymity import get_equivalence_classes
 
@@ -295,35 +299,8 @@ class NCP:
         _all_penalties = 0.0
         _max_ranges = {}
 
-        def get_penalty_cat(value, hierarchy):
-            if "values" not in list(hierarchy["tree"][0]):
-                return 0
-            all_leaves = 0.0
-            for x in hierarchy["tree"][0]["values"]:
-                if value in x["original"]:
-                    return 0
-                all_leaves += len(x["original"])
-
-            def find_leaves_under_this_node(value, hierarchy, pos):
-                leaves = 0
-                for node in hierarchy["tree"][pos]["values"]:
-                    if node["generalized"] == value:
-                        if pos == 0:
-                            return len(node["original"])
-                        for _value in node["original"]:
-                            leaves += find_leaves_under_this_node(
-                                _value, hierarchy, pos - 1
-                            )
-                        return leaves
-                return leaves
-
-            for level in range(len(hierarchy["tree"]) - 1):
-                for x in hierarchy["tree"][level]["values"]:
-                    if value == x["generalized"]:
-                        return (
-                            find_leaves_under_this_node(value, hierarchy, level)
-                            / all_leaves
-                        )
+        def get_penalty_cat(value, hierarchy: Hierarchy):
+            return len(hierarchy.get_leaves_under_node(value)) / len(hierarchy.leaves)
 
         for qid in equivalence_classes:
             _penalty = 0.0
@@ -334,6 +311,10 @@ class NCP:
                 elif is_categorical[pos]:
                     _penalty += get_penalty_cat(val, hierarchies[qids_idx[pos]])
                 else:
+                    if not isinstance(val, str):
+                        # Assume that if a value is still in numerical form,
+                        # it is not generalized...
+                        continue
                     if "~" in val:
                         # If numerical value is generalized as a range
                         low, high = val.split("~")

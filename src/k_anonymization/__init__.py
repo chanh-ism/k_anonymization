@@ -8,5 +8,4 @@ from . import algorithms, core, evaluation, utils
 
 pd_set_option("mode.copy_on_write", True)
 
-__all__ = ["core", "algorithms", "utils", "evaluation"]
-# __all__ += core.__all__
+__all__ = ["core", "algorithms", "evaluation", "utils"]

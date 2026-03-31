@@ -1,11 +1,9 @@
-from k_anonymization.core.dataset import Dataset
-
-from ..utils import generalize_column_tree
+from k_anonymization.core import Dataset
 
 
 def get_max_ranges(dataset: Dataset):
     qids_idx = dataset.qids_idx
-    is_cat = dataset.is_categorical
+    is_categorical = dataset.is_categorical
     hierarchies = dataset.hierarchies
     df = dataset.df
     columns = list(df)
@@ -13,12 +11,8 @@ def get_max_ranges(dataset: Dataset):
     max_ranges = []
     for pos, idx in enumerate(qids_idx):
         max_ranges.extend([None] * (idx - len(max_ranges)))
-        if is_cat[pos]:
-            max_ranges.append(
-                len(hierarchies[idx]["lambda"])
-                if "lambda" in list(hierarchies[idx])
-                else len(hierarchies[idx]["tree"])
-            )
+        if is_categorical[pos]:
+            max_ranges.append(hierarchies[idx].height)
         else:
             max_ranges.append(df[columns[idx]].max() - df[columns[idx]].min())
 
@@ -27,17 +21,13 @@ def get_max_ranges(dataset: Dataset):
     return max_ranges
 
 
-def get_distance(r, record, qids_idx, is_cat, max_ranges, hierarchies):
+def get_distance(r, record, qids_idx, is_categorical, max_ranges, hierarchies):
     distances = []
 
     for pos, idx in enumerate(qids_idx):
-        if is_cat[pos]:
+        if is_categorical[pos]:
             distances.append(
-                get_categorical_distance(
-                    [r[idx], record[idx]],
-                    hierarchies[idx],
-                    max_ranges[idx],
-                )
+                get_categorical_distance([r[idx], record[idx]], hierarchies[idx])
             )
         else:
             distances.append(abs(r[idx] - record[idx]) / max_ranges[idx])
@@ -45,7 +35,9 @@ def get_distance(r, record, qids_idx, is_cat, max_ranges, hierarchies):
     return sum(distances)
 
 
-def get_information_loss(record, cluster, qids_idx, is_cat, max_ranges, hierarchies):
+def get_information_loss(
+    record, cluster, qids_idx, is_categorical, max_ranges, hierarchies
+):
     information_losses = []
     if record is None:
         size = len(cluster)
@@ -55,11 +47,9 @@ def get_information_loss(record, cluster, qids_idx, is_cat, max_ranges, hierarch
         columns = list(zip(*(cluster + [record])))
 
     for pos, idx in enumerate(qids_idx):
-        if is_cat[pos]:
+        if is_categorical[pos]:
             information_losses.append(
-                get_categorical_distance(
-                    columns[idx], hierarchies[idx], max_ranges[idx]
-                )
+                get_categorical_distance(columns[idx], hierarchies[idx])
             )
         else:
             information_losses.append(
@@ -69,14 +59,6 @@ def get_information_loss(record, cluster, qids_idx, is_cat, max_ranges, hierarch
     return size * sum(information_losses)
 
 
-def get_categorical_distance(values, hierarchy, height):
-    level = 0
-    generalized_values = values[:]
-
-    while len(set(generalized_values)) > 1:
-        generalized_values = generalize_column_tree(
-            generalized_values, hierarchy, level
-        )
-        level += 1
-
-    return level / height
+def get_categorical_distance(values, hierarchy):
+    _level = hierarchy.get_lowest_common_ancestor(values, get_type="height")
+    return _level / hierarchy.height

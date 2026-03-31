@@ -1,4 +1,3 @@
-from ...utils import generalize_column
 from .._utils import get_distance
 
 
@@ -62,12 +61,9 @@ class OKA_Cluster(object):
                 if idx not in self.qids_idx:
                     centroid.append(-1)
                 elif self.is_categorical[self.qids_idx.index(idx)] is True:
-                    level = 0
-                    values = col[:]
-                    while len(set(values)) > 1:
-                        values = generalize_column(values, self.hierarchies[idx], level)
-                        level += 1
-                    centroid.append(values[0])
+                    centroid.append(
+                        self.hierarchies[idx].get_lowest_common_ancestor(col)
+                    )
                 else:
                     centroid.append(sum(col) / len(col))
             self.centroid = centroid

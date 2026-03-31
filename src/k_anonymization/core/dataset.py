@@ -266,10 +266,9 @@ class Dataset:
         if self.__hierarchies is None:
             self.__hierarchies = HierarchiesDict(
                 f"{self.path}/hierarchies",
-                len(list(self.df)),
+                self.df,
                 self.qids,
                 self.qids_idx,
-                self.df[0:1].values[0].tolist(),
             )
         return self.__hierarchies
 

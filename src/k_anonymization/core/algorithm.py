@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-from k_anonymization.core.dataset import Dataset, ITableDF
+from .dataset import Dataset
+from .frame import ITableDF
 
 
 class Algorithm(ABC):

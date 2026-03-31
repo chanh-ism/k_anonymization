@@ -6,7 +6,7 @@ from k_anonymization.evaluation.anonymity import (
     is_k_anonymous,
 )
 
-from ..utils import generalize
+from ..utils import generalize_column
 
 
 class Datafly(Algorithm):
@@ -134,12 +134,14 @@ class Datafly(Algorithm):
             generalized_att_idx, generalized_att = self.pick_attribute(
                 np_anon_data, qids_idx, qids
             )
-            _, is_suppressed = generalize(
-                np_anon_data,
+            generalized_values, is_suppressed = generalize_column(
+                np_anon_data[:, generalized_att_idx],
                 self.dataset.hierarchies[generalized_att],
-                generalized_att_idx,
                 self.hierarchies_tracking[generalized_att],
+                self.hierarchies_tracking[generalized_att] + 1,
             )
+            np_anon_data[:, generalized_att_idx] = generalized_values
+
             if is_suppressed:
                 self.hierarchies_tracking[generalized_att] = -1
             else:

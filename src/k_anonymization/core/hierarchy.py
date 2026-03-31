@@ -1,152 +1,277 @@
 import json
 from functools import cached_property
+from typing import Literal
 
-from graphviz import Digraph
-from ipywidgets import Dropdown, Image, Label, Layout, Stack, VBox, jslink
+import pandas as pd
+from ipywidgets import Dropdown, Label, Stack, VBox, jslink
+
+from k_anonymization.utils.data_table import get_ITable_widget
+
+from .frame import ITableDF
 
 
-class Hierarchy(dict):
+class Hierarchy:
     """
     Attribute's generalization hierarchy.
 
-    This class stores hierarchical structures used for data generalization,
-    supporting both explicit tree definitions and functional lambda-based
-    transformations. It also provides a visualization of these hierarchies
-    via Graphviz Digraphs.
+    This class stores the generalization mapping of a QID attribute's
+    generalization hierarchy and provides utility functions for acquiring
+    necessary properties of the hierarchy and its nodes.
 
     Parameters
     ----------
-    first_row : any
-        The original data value of the first row used for visualizing
-        generalization tree (for lambda-based available hierarchy).
-    *args : tuple
-        Positional arguments passed to the parent `dict` constructor.
-    **kwargs : dict
-        Keyword arguments passed to the parent `dict` constructor.
-
-    Attributes
-    ----------
-    first_row : any
-        The starting value for hierarchy transformations.
-    height : int
-        The number of levels in the hierarchy.
+    name : str
+        The identifier for the hierarchy (usually the column name).
+    hierarchy_df : pd.DataFrame
+        A DataFrame where column 0 is the raw data and subsequent
+        columns are progressively more generalized levels.
     """
 
-    def __init__(
-        self,
-        first_row=None,
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, name: str, hierarchy_df: pd.DataFrame):
         """
-        Initialize the Hierarchy.
-
-        Sets the first row and calculates the hierarchy height if a
-        tree structure is provided in the input keys.
+        Initialize from a pre-computed hierarchy mapping DataFrame.
 
         Parameters
         ----------
-        first_row : any
-            The original data value of the first row.
-        *args : tuple
-            Arguments for `dict` initialization.
-        **kwargs : dict
-            Key-value pairs for `dict` initialization.
+        name : str
+            Hierarchy name.
+        hierarchy_df : pd.DataFrame
+            The pre-computed hierarchy mapping DataFrame.
         """
-        super().__init__(*args, **kwargs)
-        self.first_row = first_row
-        if "tree" in self.keys():
-            self.height = len(self.__getitem__("tree"))
+        hierarchy_df.sort_values(
+            hierarchy_df.columns[::-1].to_list(),
+            ignore_index=True,
+            inplace=True,
+        )
+        self.__hierarchy_df = hierarchy_df
+        self.__name = name
+
+    @classmethod
+    def from_csv(cls, name: str, path: str, sep: str = ","):
+        """
+        Initialize from a CSV file.
+
+        The CSV should have no header, where the first column is the raw
+        data and each following column is a higher level of generalization.
+
+        Parameters
+        ----------
+        name : str
+            Hierarchy name.
+        path : str
+            The path of the csv file.
+        sep : str, default ','
+            Separator string (delimiter) of the csv file.
+        """
+        return cls(name, pd.read_csv(path, sep=sep, header=None))
+
+    @classmethod
+    def from_json(cls, name: str, org_column: pd.DataFrame, json_path: str):
+        """
+        Initialize from a JSON configuration file.
+
+        Supports two types of definition for generalization:
+
+        1. ``lambda``: Apply lambda functions to derive the next
+           generalization level based on the current value.
+
+        2. ``tree``: Explicitly map a list of ``original`` values to a
+           ``generalized`` value.
+
+        Parameters
+        ----------
+        name : str
+            Hierarchy name.
+        org_column : pd.DataFrame
+            The column from the original dataset to use as Level 0.
+        json_path : str
+            Path to the JSON configuration file.
+        """
+        hierarchy_df = pd.DataFrame({0: org_column.unique()})
+        try:
+            with open(json_path) as f:
+                props = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f'Cannot find hierarchy file at "{json_path}".')
+        if "lambda" in props:
+            for level in range(len(props["lambda"])):
+                f = eval(props["lambda"][level])
+                hierarchy_df[level + 1] = hierarchy_df[level].apply(f)
+        else:
+            for level in range(len(props["tree"])):
+                _hi = hierarchy_df[[level]].copy()
+                if props["tree"][level]["is_suppressed"]:
+                    hierarchy_df[level + 1] = "*"
+                else:
+                    for v in props["tree"][level]["values"]:
+                        _hi[_hi.isin(v["original"]).any(axis=1)] = v["generalized"]
+                    hierarchy_df[level + 1] = _hi[level].copy()
+
+        return cls(name, hierarchy_df)
+
+    @property
+    def name(self):
+        """
+        Name of this hierarchy.
+
+        Returns
+        -------
+        str
+        """
+        return self.__name
+
+    @property
+    def hierarchy_df(self):
+        """
+        The underlying hierarchy mapping DataFrame.
+
+        Returns
+        -------
+        ITableDF
+        """
+        return ITableDF(self.__hierarchy_df.copy())
 
     @cached_property
-    def generalization_tree(self):
+    def height(self):
         """
-        Generate a visual representation of the generalization hierarchy.
-
-        Depending on whether the dictionary contains a "tree" or "lambda"
-        key, this property constructs a Graphviz Digraph.
+        Height of this hierarchy.
 
         Returns
         -------
-        graphviz.Digraph or str
-            A Digraph object if a hierarchy is found, or a string message
-            if no generalization logic is provided.
+        int
         """
-        if "tree" in self.keys():
-            return self.__get_generalization_tree_from_tree()
-        elif "lambda" in self.keys():
-            return self.__get_generalization_tree_from_lambda()
-        else:
-            return "No generalization provided/found."
+        return self.__hierarchy_df.shape[1] - 1
 
-    def __get_generalization_tree_from_tree(self):
+    @cached_property
+    def leaves(self):
         """
-        Construct a Digraph from an explicit tree structure.
-
-        Iterates through the "tree" list to map original values to
-        their generalized counterparts across different levels.
+        List of leaves (values at level 0).
 
         Returns
         -------
-        graphviz.Digraph
-            A visual tree showing the many-to-one mapping of values.
+        list
         """
-        tree = Digraph(
-            edge_attr={"arrowhead": "none"},
-            node_attr={"shape": "plaintext"},
-        )
-        name = self.__getitem__("name")
-        if self.height == 1:
-            tree.edge(f"(1)\n{name}", "All values")
-            return tree
-        for index, node in enumerate(self.__getitem__("tree")[:-1]):
-            for values in node["values"]:
-                tree.edges(
-                    [
-                        [
-                            f'({index + 1})\n{values["generalized"]}',
-                            f'{f"({index})\n" if index != 0 else ""}{v}',
-                        ]
-                        for v in values["original"]
-                    ]
+        return self.__hierarchy_df[0].to_list()
+
+    def contains(self, node_value: any):
+        """
+        Check whether a node exists anywhere in the hierarchy.
+
+        Parameters
+        ----------
+        node_value : any
+            The value of the node to inspect.
+
+        Returns
+        -------
+        bool
+        """
+        if node_value in self.leaves or node_value == "*":
+            return True
+
+        return True if self.__hierarchy_df.eq(node_value).any().sum() != 0 else False
+
+    def get_leaves_under_node(self, node_value: any):
+        """
+        Get all leaves (values at level 0) under the given node.
+
+        Parameters
+        ----------
+        node_value : any
+            The value of the node to inspect.
+
+        Returns
+        -------
+        list
+            A list of leaves.
+        """
+        if node_value in self.leaves:
+            return []
+
+        if node_value == "*":
+            return self.leaves
+
+        search_df = self.__hierarchy_df[self.__hierarchy_df.eq(node_value).any(axis=1)]
+        if search_df.shape[0] == 0:
+            raise ValueError(
+                f'Node "{node_value}" (type: {type(node_value)}) not found in the hierarchy.'
+            )
+        return search_df[0].to_list()
+
+    def get_height_of_node(self, node_value: any):
+        """
+        Get the generalization level for a specific node.
+
+        Parameters
+        ----------
+        node_value : any
+            The value of the node to inspect.
+
+        Returns
+        -------
+        int
+            Generalization level of the input node.
+        """
+        if node_value in self.leaves:
+            return 0
+
+        if node_value == "*":
+            return self.height
+
+        search_df = self.__hierarchy_df.columns[
+            self.__hierarchy_df.eq(node_value).any()
+        ]
+        if search_df.size == 0:
+            raise ValueError(
+                f'Node "{node_value}" (type: {type(node_value)}) not found in the hierarchy.'
+            )
+        return search_df.item()
+
+    def get_lowest_common_ancestor(
+        self,
+        node_values: list,
+        get_type: Literal["value", "height"] = "value",
+    ):
+        """
+        Find the lowest common ancestor (LCA) of the given nodes.
+
+        This is used to find the lowest-level generalized value that can
+        hide a group of different values.
+
+        Parameters
+        ----------
+        node_values : list
+            The list of values to inspect.
+        get_type : {'value', 'height'}, default 'value'
+            Whether to return the LCA value or its generalization level.
+
+        Returns
+        -------
+        str or int
+            The LCA value or its height (generalization level).
+        """
+        assert len(node_values) > 1, "node_values must contains at least 2 values."
+
+        for node_value in node_values:
+            if not self.contains(node_value):
+                raise ValueError(
+                    f'Node "{node_value}" (type: {type(node_value)}) not found in the hierarchy.'
                 )
-            if index >= self.height - 2:
-                tree.edges(
-                    [
-                        [
-                            f"({index + 2})\n{name}",
-                            f'({index + 1})\n{values["generalized"]}',
-                        ]
-                        for values in node["values"]
-                    ]
-                )
-        return tree
 
-    def __get_generalization_tree_from_lambda(self):
-        """
-        Construct a Digraph from a sequence of lambda transformations.
+        search_df = self.__hierarchy_df[
+            self.__hierarchy_df.isin(node_values).any(axis=1)
+        ]
 
-        Evaluates the strings in the "lambda" key sequentially, applying
-        each function to the result of the previous step starting
-        from `first_row`.
+        for level in range(self.height):
+            _unique = search_df[level].unique()
+            if _unique.size == 1:
+                if get_type == "value":
+                    return _unique.item()
+                return level
 
-        Returns
-        -------
-        graphviz.Digraph
-            A visual linear path showing the transformation of a
-            specific value through the hierarchy.
-        """
-        tree = Digraph(graph_attr={"rankdir": "LR"})
-        lambdas = self.__getitem__("lambda")
-        nodes = [self.first_row]
-        for f in lambdas:
-            nodes.append(eval(f)(nodes[-1]))
-        for i, v in enumerate(nodes[0:-1]):
-            if i == 0:
-                tree.edge(str(nodes[0]), str(nodes[1]), label="(1)")
-            else:
-                tree.edge(str(nodes[i]), str(nodes[i + 1]), label=f"({i+1})")
-        return tree
+        if get_type == "value":
+            return "*"
+        return self.height
 
 
 class HierarchiesDict(dict):
@@ -161,35 +286,28 @@ class HierarchiesDict(dict):
     ----------
     hierarchies_dir : str
         The path to the directory containing JSON files for the hierarchies.
-    num_of_attributes : int
-        The total number of attributes in the dataset.
+    df : pd.DataFrame
+        The original data.
     qids : list
-        A list of names for the Quasi-Identifiers (QIDs).
+        A list of names of the QID attributes.
     qids_idx : list
-        A list of integer indices corresponding to the positions of the
-        QIDs in the dataset.
-    first_row : list
-        A sample row of data used to initialize individual HierarchyDicts
-        for lambda-based transformations.
+        The column indices of the QID attributes.
 
     Attributes
     ----------
     hierarchies_dir : str
         Directory path where JSON hierarchy files are located.
-    first_row : list
-        Sample data used as the base for generalization levels.
     """
 
     def __init__(
         self,
         hierarchies_dir: str,
-        num_of_attributes: int,
+        df: pd.DataFrame,
         qids: list,
         qids_idx: list,
-        first_row: list,
     ):
         """
-        Initialize the HierarchiesDict and map attributes to positions.
+        Initialize the HierarchiesDict.
 
         Constructs an internal mapping of attribute names to their specific
         column indices to allow for flexible lookup.
@@ -197,23 +315,21 @@ class HierarchiesDict(dict):
         Parameters
         ----------
         hierarchies_dir : str
-            Path to the hierarchy JSON files.
-        num_of_attributes : int
-            Total column count.
+            The path to the directory containing JSON files for the hierarchies.
+        df : pd.DataFrame
+            The original data.
         qids : list
-            Names of the Quasi-Identifiers.
+            A list of names of the QID attributes.
         qids_idx : list
-            Column indices of the Quasi-Identifiers.
-        first_row : list
-            Sample data values.
+            The column indices of the QID attributes.
         """
         self.hierarchies_dir = hierarchies_dir
+        self.__df = df
         self.__qids = []
         for pos, qid in enumerate(qids):
             self.__qids.extend([None] * (qids_idx[pos] - len(self.__qids)))
             self.__qids.append(qid)
-        self.__qids.extend([None] * (num_of_attributes - len(self.__qids)))
-        self.first_row = first_row
+        self.__qids.extend([None] * (df.columns.size - len(self.__qids)))
 
     def __getitem__(self, key):
         """
@@ -238,9 +354,6 @@ class HierarchiesDict(dict):
         AttributeError
             If the key is an index with no assigned QID or if the
             attribute name is not found in the QID list.
-        FileNotFoundError
-            If the JSON file for the requested attribute does not exist
-            in the specified directory.
         """
         if isinstance(key, int):
             _key = self.__qids[key]
@@ -253,42 +366,33 @@ class HierarchiesDict(dict):
             if _key is None or _key not in self.__qids:
                 raise AttributeError(f"Cannot find attribute '{_key}'")
         if _key not in self.keys():
-            try:
-                with open(f"{self.hierarchies_dir}/{_key}.json") as f:
-                    super().__setitem__(
-                        _key,
-                        Hierarchy(
-                            self.first_row[self.__qids.index(_key)],
-                            json.load(f),
-                        ),
-                    )
-            except FileNotFoundError:
-                raise FileNotFoundError(f'Cannot find hierarchy file of "{_key}".')
+            super().__setitem__(
+                _key,
+                Hierarchy.from_json(
+                    _key,
+                    self.__df[_key],
+                    f"{self.hierarchies_dir}/{_key}.json",
+                ),
+            )
         return super().__getitem__(_key)
 
     @cached_property
-    def generalization_trees(self):
+    def all_hierarchies_df(self):
         """
-        Create an interactive widget to visualize all loaded hierarchies.
+        Interactive widget to display all loaded hierarchies on IPython.
 
-        Generates a UI component consisting of a dropdown menu and a
-        display area that shows the Graphviz-rendered generalization
-        tree for each attribute.
+        Generates a UI component for IPython consisting of a dropdown menu
+        and a display area showing the generalization hierarchy of each QID
+        attribute.
 
         Returns
         -------
         ipywidgets.VBox
-            A container holding the dropdown and the stacked images
-            of the generalization trees.
         """
         qids = [x for x in self.__qids if x is not None]
+        dropdown = Dropdown(options=qids, value=qids[0])
         children = [
-            Image(
-                value=self.__getitem__(qid).generalization_tree.pipe(format="png"),
-                format="png",
-                layout=Layout(max_width="unset"),
-            )
-            for qid in qids
+            get_ITable_widget(self.__getitem__(qid).hierarchy_df) for qid in qids
         ]
         stack = Stack(children, selected_index=0)
         dropdown = Dropdown(options=qids)

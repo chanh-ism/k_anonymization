@@ -1,81 +1,70 @@
-from numpy import ndarray, vectorize
-from pandas.core.frame import DataFrame
+"""
+Utility functions for anonymization algorithms.
+"""
+
+import pandas as pd
+from numpy import ndarray
+
+from k_anonymization.core import Hierarchy
 
 
-def generalize_df(df: DataFrame, hierarchy: dict, level: int):
-    is_suppressed = False
+def generalize_column(
+    values: list | ndarray | pd.Series,
+    hierarchy: Hierarchy,
+    level_from: int,
+    level_to: int,
+):
+    """
+    Generalize a column of data.
 
-    np_data, is_suppressed = generalize(
-        df.to_numpy(copy=True), hierarchy, list(df).index(hierarchy["name"]), level
-    )
+    Parameters
+    ----------
+    values : list, numpy.ndarray, or pandas.Series
+        The input data to be generalized.
+    hierarchy : Hierarchy
+        Hierarchy definition for the input data.
+    level_from : int
+        The current generalization level of the input data.
+    level_to : int
+        The target generalization level to transform the input data into.
 
-    return DataFrame(np_data, columns=list(df)), is_suppressed
+    Returns
+    -------
+    tuple
+        ``(generalized_values, is_suppressed)``
 
+        generalized_values : list, numpy.ndarray, or pandas.Series
+            The generalized data in the same format as the input.
+        is_suppressed : bool
+            Whether the data has been suppressed (replaced all values with '*').
 
-def generalize(data: ndarray, hierarchy: dict, qid_idx: int, level: int):
-    is_suppressed = False
-    f = None
-
-    if "lambda" in list(hierarchy):
-        f = vectorize(eval(hierarchy["lambda"][level]))
-        if level == len(hierarchy["lambda"]) - 1:
-            is_suppressed = True
+    Raises
+    ------
+    AssertionError
+        If ``level_from`` is not lower than ``level_to``, or if they
+        exceed the height of the hierarchy.
+    """
+    assert level_from < level_to, "level_from must be lower than level_to"
+    assert (
+        level_from <= hierarchy.height and level_to <= hierarchy.height
+    ), "level_from and level_to must not be higher than hierarchy.height"
+    if isinstance(values, list) or isinstance(values, ndarray):
+        _values = pd.Series(values, name="org")
     else:
-        is_suppressed = hierarchy["tree"][level]["is_suppressed"]
-        if is_suppressed:
-            f = vectorize(lambda x: "*")
-        else:
-            generalized_values = hierarchy["tree"][level]["values"]
+        _values = values.copy()
+        _values.name = "org"
 
-            def find_generalized_value(x):
-                for generalized_value in generalized_values:
-                    if x in generalized_value["original"]:
-                        return generalized_value["generalized"]
+    _generalized_values = pd.merge(
+        _values,
+        hierarchy.hierarchy_df[[level_from, level_to]].drop_duplicates(),
+        left_on="org",
+        right_on=level_from,
+    )[level_to]
+    _is_suppressed = _generalized_values[0] == "*"
 
-            f = vectorize(lambda x: find_generalized_value(x))
-
-    data[:, qid_idx] = f(data[:, qid_idx])
-
-    return data, is_suppressed
-
-
-def generalize_column(values: list, hierarchy: dict, level: int):
-    if "lambda" in list(hierarchy):
-        return generalize_column_lambda(values, hierarchy, level)
-    return generalize_column_tree(values, hierarchy, level)
-
-
-def generalize_column_tree(values: list, hierarchy: dict, level: int):
-    assert "tree" in list(
-        hierarchy
-    ), f"Taxonomy tree of '{hierarchy["name"]}' is not defined."
-    assert level < len(
-        hierarchy["tree"]
-    ), f"Input level {level} exceeds the highest generalization level of '{hierarchy["name"]}'."
-
-    is_suppressed = hierarchy["tree"][level]["is_suppressed"]
-    if is_suppressed:
-        return list(map(lambda x: "*", values))
+    if isinstance(values, list):
+        return _generalized_values.to_list(), _is_suppressed
+    elif isinstance(values, ndarray):
+        return _generalized_values.to_numpy(), _is_suppressed
     else:
-        generalized_values = hierarchy["tree"][level]["values"]
-
-        def find_generalized_value(x):
-            for generalized_value in generalized_values:
-                if x in generalized_value["original"]:
-                    return generalized_value["generalized"]
-            return x
-
-        return list(map(find_generalized_value, values))
-
-
-def generalize_column_lambda(values: list, hierarchy: dict, level: int):
-    assert "lambda" in list(
-        hierarchy
-    ), f"Lambda functions for generalizing '{hierarchy["name"]}' are not defined."
-    assert level < len(
-        hierarchy["lambda"]
-    ), f"Input level {level} exceeds the highest generalization level of '{hierarchy["name"]}'."
-
-    f = eval(hierarchy["lambda"][level])
-
-    return list(map(f, values))
+        return _generalized_values, _is_suppressed

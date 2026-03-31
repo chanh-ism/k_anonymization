@@ -1,3 +1,7 @@
+"""
+Machine Learning Classification Performance.
+"""
+
 from enum import Enum
 
 from numpy import average

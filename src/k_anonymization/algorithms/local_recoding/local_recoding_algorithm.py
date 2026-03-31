@@ -8,7 +8,6 @@ from numpy import arange
 from k_anonymization.core.algorithm import Algorithm
 from k_anonymization.core.dataset import Dataset
 
-from ..utils import generalize_column
 from ._utils import get_max_ranges
 
 type GroupAnonymization = Callable[
@@ -143,12 +142,9 @@ class GroupAnonymizationBuiltIn:
         """
         columns = list(zip(*group))
         for _, idx in enumerate(props.qids_idx):
-            level = 0
-            while len(set(columns[idx])) > 1:
-                columns[idx] = generalize_column(
-                    columns[idx], props.hierarchies[idx], level
-                )
-                level += 1
+            columns[idx] = [
+                props.hierarchies[idx].get_lowest_common_ancestor(columns[idx])
+            ] * len(columns[idx])
         return list(zip(*columns))
 
 
